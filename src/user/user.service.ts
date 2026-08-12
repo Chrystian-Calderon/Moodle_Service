@@ -53,4 +53,26 @@ export class UserService {
     return usuario;
   }
 
+  async buscarPorId(id: string) {
+    return await this.prisma.usuario.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        roles: {
+          include: {
+            rol: {
+              include: {
+                permisos: {
+                  include: {
+                    permiso: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }
