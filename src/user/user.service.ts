@@ -31,15 +31,23 @@ export class UserService {
   async buscarPorCorreo(correo: string) {
     const usuario = await this.prisma.usuario.findUnique({
       where: {
-        correo: correo
+        correo,
       },
       include: {
         roles: {
           include: {
-            rol: true
-          }
-        }
-      }
+            rol: {
+              include: {
+                permisos: {
+                  include: {
+                    permiso: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     return usuario;

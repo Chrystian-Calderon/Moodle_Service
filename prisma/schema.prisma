@@ -66,10 +66,36 @@ model Rol {
   creadoEn      DateTime @default(now())
   actualizadoEn DateTime @updatedAt
 
+  permisos RolPermiso[]
   usuarios UsuarioRol[]
   menus    RolMenu[]
 
   @@map("roles")
+}
+
+model Permiso {
+  id            String   @id @default(cuid())
+  nombre        String   @unique
+  descripcion   String?
+  estado        String   @default("activo")
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  roles RolPermiso[]
+
+  @@map("permisos")
+}
+
+model RolPermiso {
+  rolId      String
+  permisoId  String
+  asignadoEn DateTime @default(now())
+
+  rol     Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso Permiso @relation(fields: [permisoId], references: [id], onDelete: Cascade)
+
+  @@id([rolId, permisoId])
+  @@map("rol_permisos")
 }
 
 model UsuarioRol {

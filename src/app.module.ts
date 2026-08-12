@@ -6,11 +6,13 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { InscripcionModule } from './modules/inscripcion/inscripcion.module';
+import { RolsModule } from './rols/rols.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal: true,
-  }), AuthModule, UserModule, PrismaModule, InscripcionModule],
+  }), AuthModule, UserModule, PrismaModule, RolsModule, PermissionsModule, InscripcionModule],
   controllers: [AppController],
   providers: [AppService],
 })

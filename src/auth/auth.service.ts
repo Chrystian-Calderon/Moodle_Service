@@ -22,19 +22,25 @@ export class AuthService {
         }
         const nombresRoles = usuario.roles.map((item) => item.rol.nombre);
 
+        const permisos = usuario.roles.flatMap((item) =>
+            item.rol.permisos.map((rolPermiso) => rolPermiso.permiso.nombre),
+        );
+
         const payload = {
             sub: usuario.id,
             username: usuario.username,
-            roles: nombresRoles
+            roles: nombresRoles,
+            permisos,
         }
 
         return {
-            access_token: this.jwtService.signAsync(payload, { expiresIn: '1h' }),
+            access_token: await this.jwtService.signAsync(payload, { expiresIn: '1h' }),
             usuario: {
                 id: usuario.id,
                 username: usuario.username,
                 correo: usuario.correo,
                 rol: nombresRoles,
+                permisos,
             }
         }
     }
