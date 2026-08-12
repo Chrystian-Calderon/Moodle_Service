@@ -34,13 +34,14 @@ export class UserService {
         correo: correo
       },
       include: {
-        usuarioRoles: {
+        roles: {
           include: {
             rol: true
           }
         }
       }
     });
+
     return usuario;
   }
 
