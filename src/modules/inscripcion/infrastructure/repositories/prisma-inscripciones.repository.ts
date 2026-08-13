@@ -17,9 +17,13 @@ export class PrismaInscripcionesRepository
     });
   }
 
-  async create(inscripcion: any) {
+  async create(data: {
+    moduloId: string;
+    estudianteId: string;
+    numeroInscripcion: string;
+  }) {
     return this.prisma.inscripcion.create({
-      data: inscripcion,
+      data,
     });
   }
 
@@ -31,6 +35,8 @@ export class PrismaInscripcionesRepository
   }
 
   async delete(id: string) {
-    throw new Error('Method not implemented.');
+    await this.prisma.inscripcion.delete({
+      where: { id },
+    });
   }
 }

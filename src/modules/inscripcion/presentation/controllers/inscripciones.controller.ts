@@ -1,5 +1,7 @@
-import { Controller, Get, Param, Post, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, Delete, Body } from '@nestjs/common';
 import { InscripcionesService } from 'src/modules/inscripcion/application/services/inscripciones.service';
+import { CreateInscripcionDto } from 'src/modules/inscripcion/presentation/dto/create-inscripcion.dto';
+import { UpdateInscripcionDto } from 'src/modules/inscripcion/presentation/dto/update-inscripcion.dto';
 
 @Controller('inscripciones')
 export class InscripcionesController {
@@ -12,29 +14,21 @@ export class InscripcionesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return {
-      message: `This action returns a #${id} inscripcion`,
-    }
+    return this.inscripcionesService.findById(id);
   }
 
   @Post()
-  create() {
-    return {
-      message: 'This action creates a new inscripcion',
-    }
+  create(@Body() data: CreateInscripcionDto) {
+    return this.inscripcionesService.create(data);
   }
 
   @Put(':id')
-  update(@Param('id') id: string) {
-    return {
-      message: `This action updates a #${id} inscripcion`,
-    }
+  update(@Param('id') id: string, @Body() data: UpdateInscripcionDto) {
+    return this.inscripcionesService.update(id, data);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return {
-      message: `This action removes a #${id} inscripcion`,
-    }
+    return this.inscripcionesService.delete(id);
   }
 }
