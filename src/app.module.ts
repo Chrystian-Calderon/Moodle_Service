@@ -7,11 +7,12 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { RolsModule } from './rols/rols.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { MenusModule } from './menus/menus.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal: true,
-  }), AuthModule, UserModule, PrismaModule, RolsModule, PermissionsModule],
+  }), AuthModule, UserModule, PrismaModule, RolsModule, PermissionsModule, MenusModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -3,12 +3,15 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { MenusService } from 'src/menus/menus.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
-        private readonly jwtService: JwtService) { }
+        private readonly jwtService: JwtService,
+        private readonly menusService: MenusService
+    ) { }
 
     async login(loginDto: LoginDto) {
         const { correo, password } = loginDto;
@@ -26,6 +29,11 @@ export class AuthService {
             item.rol.permisos.map((rolPermiso) => rolPermiso.permiso.nombre),
         );
 
+        const rolIds = usuario.roles.map((item) => item.rolId);
+
+        const menus = await this.menusService.obtenerMenusPorRoles(rolIds);
+
+
         const payload = {
             sub: usuario.id,
             username: usuario.username,
@@ -41,6 +49,7 @@ export class AuthService {
                 correo: usuario.correo,
                 rol: nombresRoles,
                 permisos,
+                menus,
             }
         }
     }
