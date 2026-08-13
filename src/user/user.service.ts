@@ -86,6 +86,7 @@ export class UserService {
   findOne(id: number) {
     return `This action returns a #${id} user`;
   }
+
   async actualizarUsuario(id: string, data: UpdateUsuarioDto) {
     return await this.prisma.$transaction(async (tx) => {
       await tx.usuario.update({
@@ -214,6 +215,7 @@ export class UserService {
       });
     });
   }
+
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
