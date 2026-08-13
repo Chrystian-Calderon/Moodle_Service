@@ -86,7 +86,6 @@ export class UserService {
   findOne(id: number) {
     return `This action returns a #${id} user`;
   }
-
   async actualizarUsuario(id: string, data: UpdateUsuarioDto) {
     return await this.prisma.$transaction(async (tx) => {
       await tx.usuario.update({
@@ -97,12 +96,24 @@ export class UserService {
           ...(data.correo !== undefined && {
             correo: data.correo,
           }),
-
           ...(data.username !== undefined && {
             username: data.username,
           }),
+          ...(data.estado !== undefined && {
+            estado: data.estado,
+          }),
         },
       });
+
+      const fechaNacimiento = data.fechaNacimiento
+        ? new Date(data.fechaNacimiento)
+        : null;
+
+      const fechaNacimientoValida =
+        fechaNacimiento &&
+          !Number.isNaN(fechaNacimiento.getTime())
+          ? fechaNacimiento
+          : null;
 
       await tx.perfil.upsert({
         where: {
@@ -129,7 +140,7 @@ export class UserService {
             telefono: data.telefono,
           }),
           ...(data.fechaNacimiento !== undefined && {
-            fechaNacimiento: new Date(data.fechaNacimiento),
+            fechaNacimiento: fechaNacimientoValida,
           }),
           ...(data.genero !== undefined && {
             genero: data.genero,
@@ -152,7 +163,6 @@ export class UserService {
               data.contactoEmergenciaTelefono,
           }),
         },
-
         create: {
           usuarioId: id,
           nombre: data.nombre ?? "",
@@ -162,6 +172,7 @@ export class UserService {
             data.tipoDocumentoIdentidad,
           numeroDocumento: data.numeroDocumento,
           telefono: data.telefono,
+          fechaNacimiento: fechaNacimientoValida,
           genero: data.genero,
           ciudad: data.ciudad,
           pais: data.pais,
@@ -203,7 +214,6 @@ export class UserService {
       });
     });
   }
-
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
