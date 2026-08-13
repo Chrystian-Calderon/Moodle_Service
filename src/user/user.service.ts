@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUsuarioDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
@@ -87,8 +87,121 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async actualizarUsuario(id: string, data: UpdateUsuarioDto) {
+    return await this.prisma.$transaction(async (tx) => {
+      await tx.usuario.update({
+        where: {
+          id,
+        },
+        data: {
+          ...(data.correo !== undefined && {
+            correo: data.correo,
+          }),
+
+          ...(data.username !== undefined && {
+            username: data.username,
+          }),
+        },
+      });
+
+      await tx.perfil.upsert({
+        where: {
+          usuarioId: id,
+        },
+        update: {
+          ...(data.nombre !== undefined && {
+            nombre: data.nombre,
+          }),
+          ...(data.apellidoPaterno !== undefined && {
+            apellidoPaterno: data.apellidoPaterno,
+          }),
+          ...(data.apellidoMaterno !== undefined && {
+            apellidoMaterno: data.apellidoMaterno,
+          }),
+          ...(data.tipoDocumentoIdentidad !== undefined && {
+            tipoDocumentoIdentidad:
+              data.tipoDocumentoIdentidad,
+          }),
+          ...(data.numeroDocumento !== undefined && {
+            numeroDocumento: data.numeroDocumento,
+          }),
+          ...(data.telefono !== undefined && {
+            telefono: data.telefono,
+          }),
+          ...(data.fechaNacimiento !== undefined && {
+            fechaNacimiento: new Date(data.fechaNacimiento),
+          }),
+          ...(data.genero !== undefined && {
+            genero: data.genero,
+          }),
+          ...(data.ciudad !== undefined && {
+            ciudad: data.ciudad,
+          }),
+          ...(data.pais !== undefined && {
+            pais: data.pais,
+          }),
+          ...(data.ocupacion !== undefined && {
+            ocupacion: data.ocupacion,
+          }),
+          ...(data.contactoEmergenciaNombre !== undefined && {
+            contactoEmergenciaNombre:
+              data.contactoEmergenciaNombre,
+          }),
+          ...(data.contactoEmergenciaTelefono !== undefined && {
+            contactoEmergenciaTelefono:
+              data.contactoEmergenciaTelefono,
+          }),
+        },
+
+        create: {
+          usuarioId: id,
+          nombre: data.nombre ?? "",
+          apellidoPaterno: data.apellidoPaterno,
+          apellidoMaterno: data.apellidoMaterno,
+          tipoDocumentoIdentidad:
+            data.tipoDocumentoIdentidad,
+          numeroDocumento: data.numeroDocumento,
+          telefono: data.telefono,
+          genero: data.genero,
+          ciudad: data.ciudad,
+          pais: data.pais,
+          ocupacion: data.ocupacion,
+          contactoEmergenciaNombre:
+            data.contactoEmergenciaNombre,
+          contactoEmergenciaTelefono:
+            data.contactoEmergenciaTelefono,
+        },
+      });
+
+      if (data.rolId) {
+        await tx.usuarioRol.deleteMany({
+          where: {
+            usuarioId: id,
+          },
+        });
+
+        await tx.usuarioRol.create({
+          data: {
+            usuarioId: id,
+            rolId: data.rolId,
+          },
+        });
+      }
+
+      return tx.usuario.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          perfil: true,
+          roles: {
+            include: {
+              rol: true,
+            },
+          },
+        },
+      });
+    });
   }
 
   remove(id: number) {
