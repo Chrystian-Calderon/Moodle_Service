@@ -53,4 +53,40 @@ export class UserService {
     return usuario;
   }
 
+  async buscarPorId(id: string) {
+    return await this.prisma.usuario.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        perfil: true,
+        roles: {
+          include: {
+            rol: {
+              include: {
+                permisos: {
+                  include: {
+                    permiso: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async actualizarPassword(id: string, newPassword: string) {
+    await this.prisma.usuario.update({
+      where: {
+        id,
+      },
+      data: {
+        contrasenaHash: newPassword,
+        estado: "activo",
+      }
+    }
+    );
+  }
 }
