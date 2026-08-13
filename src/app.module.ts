@@ -11,7 +11,6 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { ProgresoLeccionModule } from './modules/progreso-leccion/progreso-leccion.module';
 import { ProgresoModuloModule } from './modules/progreso-modulo/progreso-modulo.module';
 import { ProgresoCursoModule } from './modules/progreso-curso/progreso-curso.module';
-import { PruebaModule } from './prueba/prueba.module';
 
 @Module({
   imports: [
@@ -27,7 +26,6 @@ import { PruebaModule } from './prueba/prueba.module';
     ProgresoLeccionModule,
     ProgresoModuloModule,
     ProgresoCursoModule,
-    PruebaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
