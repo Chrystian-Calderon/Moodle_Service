@@ -16,7 +16,10 @@ export class AuthService {
     async login(loginDto: LoginDto) {
         const { correo, password } = loginDto;
         const usuario = await this.userService.buscarPorCorreo(correo);
-        if (!usuario || usuario.estado != "activo") {
+        if (
+            !usuario ||
+            (usuario.estado !== "activo" && usuario.estado !== "pendiente")
+        ) {
             throw new UnauthorizedException("Credenciales Incorrectas");
         }
         const passwordValido = await bcrypt.compare(password, usuario.contrasenaHash);
@@ -53,5 +56,11 @@ export class AuthService {
                 menus,
             }
         }
+    }
+    logout() {
+        return {
+            success: true,
+            message: 'Sesión cerrada correctamente',
+        };
     }
 }

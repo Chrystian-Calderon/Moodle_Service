@@ -28,8 +28,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     async validate(payload: JwtPayload) {
         const usuario = await this.userService.buscarPorId(payload.sub);
 
-        if (!usuario || usuario.estado !== 'activo') {
-            throw new UnauthorizedException('Usuario no válido');
+        if (
+            !usuario ||
+            (usuario.estado !== 'activo' &&
+                usuario.estado !== 'pendiente')
+        ) {
+            throw new UnauthorizedException(
+                'Usuario no válido',
+            );
         }
 
         const roles = usuario.roles.map(
@@ -39,7 +45,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         const permisos = usuario.roles.flatMap(
             (item) =>
                 item.rol.permisos.map(
-                    (rolPermiso) => rolPermiso.permiso.nombre,
+                    (rolPermiso) =>
+                        rolPermiso.permiso.nombre,
                 ),
         );
 
