@@ -2,13 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InscripcionesRepository } from 'src/modules/inscripcion/domain/repositories/inscripciones.repository';
 import { CreateInscripcionDto } from 'src/modules/inscripcion/presentation/dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from '../../presentation/dto/update-inscripcion.dto';
+import { CreateInscripcionEstudiantesDto } from '../../presentation/dto/create-inscripcion-estudiantes.dto';
 
 @Injectable()
 export class InscripcionesService {
   constructor(private readonly inscripcionesRepository: InscripcionesRepository) { }
 
   private generarNumeroInscripcion(): string {
-    return `INS-${Date.now}`;
+    return `INS-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   }
 
   async findAll() {
@@ -37,5 +38,20 @@ export class InscripcionesService {
 
   async delete(id: string) {
     return this.inscripcionesRepository.delete(id);
+  }
+
+  // metodo crear inscripcion con varios estudianteId
+  async createMultiple(data: CreateInscripcionEstudiantesDto) {
+    const numeroInscripciones = data.estudianteIds.map(() => this.generarNumeroInscripcion());
+
+    return this.inscripcionesRepository.createMultiple({
+      ...data,
+      numeroInscripciones,
+    });
+  }
+
+  // metodo obtener inscripciones de un estudiante por estudianteId
+  async findByEstudianteId(estudianteId: string) {
+    return this.inscripcionesRepository.findByEstudianteId(estudianteId);
   }
 }

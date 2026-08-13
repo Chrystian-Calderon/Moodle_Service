@@ -85,13 +85,37 @@ async function main() {
     });
 
     // C. Usuario Estudiante (Alumno)
-    const studentUser = await prisma.usuario.upsert({
-        where: { correo: 'estudiante@lms.com' },
+    const studentUser1 = await prisma.usuario.upsert({
+        where: { correo: 'estudiante1@lms.com' },
         update: { contrasenaHash: passwordHash },
         create: {
-            id: 'usr-est-id',
-            username: 'estudiante_lms',
-            correo: 'estudiante@lms.com',
+            id: 'usr-est1-id',
+            username: 'estudiante1_lms',
+            correo: 'estudiante1@lms.com',
+            contrasenaHash: passwordHash,
+            estado: 'activo',
+        },
+    });
+
+    const studentUser2 = await prisma.usuario.upsert({
+        where: { correo: 'estudiante2@lms.com' },
+        update: { contrasenaHash: passwordHash },
+        create: {
+            id: 'usr-est2-id',
+            username: 'estudiante2_lms',
+            correo: 'estudiante2@lms.com',
+            contrasenaHash: passwordHash,
+            estado: 'activo',
+        },
+    });
+
+    const studentUser3 = await prisma.usuario.upsert({
+        where: { correo: 'estudiante3@lms.com' },
+        update: { contrasenaHash: passwordHash },
+        create: {
+            id: 'usr-est3-id',
+            username: 'estudiante3_lms',
+            correo: 'estudiante3@lms.com',
             contrasenaHash: passwordHash,
             estado: 'activo',
         },
@@ -118,9 +142,21 @@ async function main() {
 
     // Asignar Estudiante
     await prisma.usuarioRol.upsert({
-        where: { usuarioId_rolId: { usuarioId: studentUser.id, rolId: rolStudent.id } },
+        where: { usuarioId_rolId: { usuarioId: studentUser1.id, rolId: rolStudent.id } },
         update: {},
-        create: { usuarioId: studentUser.id, rolId: rolStudent.id },
+        create: { usuarioId: studentUser1.id, rolId: rolStudent.id },
+    });
+
+    await prisma.usuarioRol.upsert({
+        where: { usuarioId_rolId: { usuarioId: studentUser2.id, rolId: rolStudent.id } },
+        update: {},
+        create: { usuarioId: studentUser2.id, rolId: rolStudent.id },
+    });
+
+    await prisma.usuarioRol.upsert({
+        where: { usuarioId_rolId: { usuarioId: studentUser3.id, rolId: rolStudent.id } },
+        update: {},
+        create: { usuarioId: studentUser3.id, rolId: rolStudent.id },
     });
 
     console.log('\n✅ ¡LMS sembrado con éxito en tu base de datos de Neon!');
@@ -199,7 +235,7 @@ async function main() {
         create: {
             moduloId: modulo1.id,
 
-            estudianteId: studentUser.id,
+            estudianteId: studentUser1.id,
 
             numeroInscripcion: 'INS-PRUEBA-001',
 
