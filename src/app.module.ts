@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { InscripcionModule } from './modules/inscripcion/inscripcion.module';
 import { RolsModule } from './rols/rols.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { MenusModule } from './menus/menus.module';
 import { ProgresoLeccionModule } from './modules/progreso-leccion/progreso-leccion.module';
 import { ProgresoModuloModule } from './modules/progreso-modulo/progreso-modulo.module';
 import { ProgresoCursoModule } from './modules/progreso-curso/progreso-curso.module';
@@ -21,7 +22,7 @@ import { ProgresoCursoModule } from './modules/progreso-curso/progreso-curso.mod
     UserModule,
     PrismaModule,
     RolsModule,
-    PermissionsModule,
+    PermissionsModule, MenusModule,
     InscripcionModule,
     ProgresoLeccionModule,
     ProgresoModuloModule,
