@@ -47,6 +47,7 @@ export class AuthService {
                 id: usuario.id,
                 username: usuario.username,
                 correo: usuario.correo,
+                estado: usuario.estado,
                 rol: nombresRoles,
                 permisos,
                 menus,
