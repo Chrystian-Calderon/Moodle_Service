@@ -63,4 +63,31 @@ export class AuthService {
             message: 'Sesión cerrada correctamente',
         };
     }
+
+    async changePassword(userId: string, newPassword: string) {
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await this.userService.actualizarPassword(userId, passwordHash);
+
+        return {
+            success: true,
+            message: 'Contraseña cambiada correctamente',
+        };
+    }
+    async getProfile(userId: string) {
+        const usuario = await this.userService.buscarPorId(userId);
+
+        if (!usuario) {
+            throw new UnauthorizedException(
+                'Usuario no encontrado',
+            );
+        }
+
+        return {
+            id: usuario.id,
+            username: usuario.username,
+            correo: usuario.correo,
+            estado: usuario.estado,
+            perfil: usuario.perfil,
+        };
+    }
 }
