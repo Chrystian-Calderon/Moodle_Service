@@ -59,6 +59,7 @@ export class UserService {
         id,
       },
       include: {
+        perfil: true,
         roles: {
           include: {
             rol: {
@@ -74,5 +75,18 @@ export class UserService {
         },
       },
     });
+  }
+
+  async actualizarPassword(id: string, newPassword: string) {
+    await this.prisma.usuario.update({
+      where: {
+        id,
+      },
+      data: {
+        contrasenaHash: newPassword,
+        estado: "activo",
+      }
+    }
+    );
   }
 }
