@@ -8,11 +8,27 @@ import { PrismaModule } from './prisma/prisma.module';
 import { InscripcionModule } from './modules/inscripcion/inscripcion.module';
 import { RolsModule } from './rols/rols.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { ProgresoLeccionModule } from './modules/progreso-leccion/progreso-leccion.module';
+import { ProgresoModuloModule } from './modules/progreso-modulo/progreso-modulo.module';
+import { ProgresoCursoModule } from './modules/progreso-curso/progreso-curso.module';
+import { PruebaModule } from './prueba/prueba.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-  }), AuthModule, UserModule, PrismaModule, RolsModule, PermissionsModule, InscripcionModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    AuthModule,
+    UserModule,
+    PrismaModule,
+    RolsModule,
+    PermissionsModule,
+    InscripcionModule,
+    ProgresoLeccionModule,
+    ProgresoModuloModule,
+    ProgresoCursoModule,
+    PruebaModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
