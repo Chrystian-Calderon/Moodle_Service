@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'; // Tu ruta nativa de Prisma 7
+import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
