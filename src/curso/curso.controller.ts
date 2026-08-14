@@ -17,7 +17,7 @@ import { UpdateCursoDto } from './dto/update-curso.dto';
 
 @Controller('curso')
 export class CursoController {
-  constructor(private readonly cursoService: CursoService) {}
+  constructor(private readonly cursoService: CursoService) { }
 
   @Post()
   create(@Body() createCursoDto: CreateCursoDto) {
@@ -31,14 +31,25 @@ export class CursoController {
 
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
     limit: number,
+
+    @Query('search')
+    search?: string,
+
+    @Query('categoria')
+    categoria?: string,
   ) {
-    return this.cursoService.findAll(page, limit);
+    return this.cursoService.findAll(
+      page,
+      limit,
+      search,
+      categoria,
+    );
   }
-  
-@Get(':id/modulos')
-findModulos(@Param('id') id: string) {
-  return this.cursoService.findModulos(id);
-}
+
+  @Get(':id/modulos')
+  findModulos(@Param('id') id: string) {
+    return this.cursoService.findModulos(id);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -56,5 +67,10 @@ findModulos(@Param('id') id: string) {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.cursoService.remove(id);
+  }
+
+  @Get('/cat/categorias')
+  findCategorias() {
+    return this.cursoService.findCategorias();
   }
 }
