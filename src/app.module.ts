@@ -29,7 +29,7 @@ import { ProgresoCursoModule } from './modules/progreso-curso/progreso-curso.mod
     PrismaModule,
     RolsModule,
     PermissionsModule, MenusModule,
-ModuloModule, LeccionModule, RecursosLeccionModule, CursoModule
+    ModuloModule, LeccionModule, RecursosLeccionModule, CursoModule,
     InscripcionModule,
     ProgresoLeccionModule,
     ProgresoModuloModule,
