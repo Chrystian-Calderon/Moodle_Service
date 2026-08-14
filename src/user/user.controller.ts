@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUsuarioDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Permission } from 'src/common/decorator/decorator';
 
 @Controller('user')
 export class UserController {
@@ -12,23 +14,40 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get('search')
+  @UseGuards(JwtAuthGuard)
+  @Permission('usuarios.ver')
+  buscarUsuarios(
+    @Query('q') q: string,
+  ) {
+    return this.userService.buscarUsuarios(q);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  obtenerUsuarioPorId(@Param('id') id: string) {
+    return this.userService.buscarDetallePorId(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  async actualizarUsuario(@Param('id') id: string, @Body() data: UpdateUsuarioDto,) {
+    return await this.userService.actualizarUsuario(id, data,);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  desactivarUsuario(@Param('id') id: string) {
+    return this.userService.DesactivarUsuario(id);
   }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @Permission('usuarios.ver')
+  obtenerUsuarios(
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    return this.userService.ObtenerTodosPaginado(Number(page), Number(limit),);
+  }
+
+
 }

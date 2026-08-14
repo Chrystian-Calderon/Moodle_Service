@@ -9,8 +9,20 @@ export class RolsService {
     return 'This action adds a new rol';
   }
 
-  findAll() {
-    return `This action returns all rols`;
+  async findAllRols() {
+    return this.prisma.rol.findMany({
+      where: {
+        estado: 'activo',
+      },
+      select: {
+        id: true,
+        nombre: true,
+        descripcion: true,
+      },
+      orderBy: {
+        nombre: 'asc',
+      },
+    });
   }
 
   findOne(id: number) {

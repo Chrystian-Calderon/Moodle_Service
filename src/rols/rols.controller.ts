@@ -6,11 +6,9 @@ import { AssignPermissionDto } from './dto/create-rol.dto';
 export class RolsController {
   constructor(private readonly rolsService: RolsService) { }
 
-
-
   @Get()
   findAll() {
-    return this.rolsService.findAll();
+    return this.rolsService.findAllRols();
   }
 
   @Get(':id')
