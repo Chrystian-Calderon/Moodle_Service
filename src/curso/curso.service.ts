@@ -25,6 +25,8 @@ export class CursoService {
     const skip = (pagina - 1) * limite;
 
     const where = {
+      estado: 'publicado',
+
       ...(search?.trim()
         ? {
           OR: [
@@ -124,8 +126,11 @@ export class CursoService {
   async remove(id: string) {
     await this.findOne(id);
 
-    return this.prisma.curso.delete({
+    return this.prisma.curso.update({
       where: { id },
+      data: {
+        estado: "inactivo",
+      },
     });
   }
 
