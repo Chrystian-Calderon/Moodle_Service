@@ -23,6 +23,11 @@ export class UserController {
     return this.userService.buscarUsuarios(q);
   }
 
+  @Get('estudiantes')
+  obtenerEstudiantes() {
+    return this.userService.ObtenerEstudiantes();
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   obtenerUsuarioPorId(@Param('id') id: string) {
@@ -48,6 +53,4 @@ export class UserController {
   ) {
     return this.userService.ObtenerTodosPaginado(Number(page), Number(limit),);
   }
-
-
 }
