@@ -414,4 +414,19 @@ export class UserService {
     )
   }
 
+  async ObtenerEstudiantes() {
+    const estudiantes = await this.prisma.usuario.findMany({
+      where: {
+        roles: {
+          some: {
+            rol: {
+              nombre: 'ESTUDIANTE',
+            },
+          },
+        },
+      },
+    });
+
+    return estudiantes;
+  }
 }
