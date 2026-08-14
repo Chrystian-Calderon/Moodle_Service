@@ -342,6 +342,14 @@ export class UserService {
 
     const usuarios = await this.prisma.usuario.findMany({
       where: {
+        // Solo usuarios con rol ESTUDIANTE
+        roles: {
+          some: {
+            rolId: 'rol-est-id',
+          },
+        },
+
+        // Búsqueda por las palabras ingresadas
         AND: palabras.map((palabra) => ({
           OR: [
             {
@@ -406,4 +414,19 @@ export class UserService {
     )
   }
 
+  async ObtenerEstudiantes() {
+    const estudiantes = await this.prisma.usuario.findMany({
+      where: {
+        roles: {
+          some: {
+            rol: {
+              nombre: 'ESTUDIANTE',
+            },
+          },
+        },
+      },
+    });
+
+    return estudiantes;
+  }
 }
