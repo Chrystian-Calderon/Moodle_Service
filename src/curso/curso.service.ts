@@ -5,7 +5,7 @@ import { UpdateCursoDto } from './dto/update-curso.dto';
 
 @Injectable()
 export class CursoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(createCursoDto: CreateCursoDto) {
     return this.prisma.curso.create({
@@ -13,14 +13,58 @@ export class CursoService {
     });
   }
 
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    categoria?: string,
+  ) {
     const pagina = Math.max(page, 1);
     const limite = Math.min(Math.max(limit, 1), 50);
 
     const skip = (pagina - 1) * limite;
 
-    const [cursos, total] = await this.prisma.$transaction([
+    const where = {
+      estado: 'publicado',
+
+      ...(search?.trim()
+        ? {
+          OR: [
+            {
+              nombre: {
+                contains: search.trim(),
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              descripcionCorta: {
+                contains: search.trim(),
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              descripcionCompleta: {
+                contains: search.trim(),
+                mode: 'insensitive' as const,
+              },
+            },
+          ],
+        }
+        : {}),
+
+      ...(categoria
+        ? {
+          categoria: {
+            equals: categoria,
+            mode: 'insensitive' as const,
+          },
+        }
+        : {}),
+    };
+
+    const [cursos, total] = await Promise.all([
       this.prisma.curso.findMany({
+        where,
         skip,
         take: limite,
         orderBy: {
@@ -28,20 +72,20 @@ export class CursoService {
         },
       }),
 
-      this.prisma.curso.count(),
+      this.prisma.curso.count({
+        where,
+      }),
     ]);
 
     const totalPaginas = Math.ceil(total / limite);
 
     return {
       data: cursos,
-      paginacion: {
-        pagina,
-        limite,
+      meta: {
+        page: pagina,
+        limit: limite,
         total,
-        totalPaginas,
-        tienePaginaAnterior: pagina > 1,
-        tienePaginaSiguiente: pagina < totalPaginas,
+        totalPages: totalPaginas,
       },
     };
   }
@@ -59,17 +103,17 @@ export class CursoService {
   }
 
   async findModulos(id: string) {
-  await this.findOne(id);
+    await this.findOne(id);
 
-  return this.prisma.modulo.findMany({
-    where: {
-      cursoId: id,
-    },
-    orderBy: {
-      orden: 'asc',
-    },
-  });
-}
+    return this.prisma.modulo.findMany({
+      where: {
+        cursoId: id,
+      },
+      orderBy: {
+        orden: 'asc',
+      },
+    });
+  }
   async update(id: string, updateCursoDto: UpdateCursoDto) {
     await this.findOne(id);
 
@@ -82,8 +126,35 @@ export class CursoService {
   async remove(id: string) {
     await this.findOne(id);
 
-    return this.prisma.curso.delete({
+    return this.prisma.curso.update({
       where: { id },
+      data: {
+        estado: "inactivo",
+      },
     });
+  }
+
+  async findCategorias() {
+    const cursos = await this.prisma.curso.findMany({
+      where: {
+        categoria: {
+          not: null,
+        },
+      },
+      select: {
+        categoria: true,
+      },
+      distinct: ["categoria"],
+      orderBy: {
+        categoria: "asc",
+      },
+    });
+
+    return cursos
+      .map((curso) => curso.categoria)
+      .filter(
+        (categoria): categoria is string =>
+          Boolean(categoria)
+      );
   }
 }
