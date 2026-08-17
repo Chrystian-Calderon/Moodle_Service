@@ -5,6 +5,7 @@ import { UpdateLeccionDto } from "./dto/update-leccion.dto";
 import { QueryLeccionDto } from "./dto/query-leccion.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import type { AuthenticatedRequest } from "src/common/types/authenticated-user";
+import { MarcarCompletadaDto } from "src/leccion/dto/responder-formulario.dto";
 
 @Controller("lecciones")
 export class LeccionController {
@@ -51,7 +52,19 @@ export class LeccionController {
 
   @Post(":id/completar")
   @UseGuards(JwtAuthGuard)
-  marcarCompletada(@Param("id") id: string, @Request() req: AuthenticatedRequest) {
-    return this.leccionService.marcarCompletada(id, req.user.id);
+  marcarCompletada(
+    @Param("id") id: string,
+    @Body() dto: MarcarCompletadaDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.leccionService.marcarCompletada(id, req.user.id, dto.respuestas);
   }
+
+  @Get(":id/formulario")
+  @UseGuards(JwtAuthGuard)
+  findFormularioPublico(@Param("id") id: string) {
+    return this.leccionService.findFormularioPublico(id);
+  }
+
+
 }
