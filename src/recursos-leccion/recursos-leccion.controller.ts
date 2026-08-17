@@ -1,51 +1,18 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from "@nestjs/common";
+import { CreateRecursoLeccionDto } from "./dto/create-recursos-leccion.dto";
+import { RecursoLeccionService } from "./recursos-leccion.service";
 
-import { RecursosLeccionService } from './recursos-leccion.service';
-import { CreateRecursosLeccionDto } from './dto/create-recursos-leccion.dto';
-import { UpdateRecursosLeccionDto } from './dto/update-recursos-leccion.dto';
-
-@Controller('recursos-leccion')
-export class RecursosLeccionController {
-  constructor(
-    private readonly recursosLeccionService: RecursosLeccionService,
-  ) {}
+@Controller("lecciones/:leccionId/recursos")
+export class RecursoLeccionController {
+  constructor(private readonly recursoService: RecursoLeccionService) { }
 
   @Post()
-  create(@Body() createRecursosLeccionDto: CreateRecursosLeccionDto) {
-    return this.recursosLeccionService.create(createRecursosLeccionDto);
+  create(@Param("leccionId") leccionId: string, @Body() dto: CreateRecursoLeccionDto) {
+    return this.recursoService.create(leccionId, dto);
   }
 
   @Get()
-  findAll() {
-    return this.recursosLeccionService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.recursosLeccionService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateRecursosLeccionDto: UpdateRecursosLeccionDto,
-  ) {
-    return this.recursosLeccionService.update(
-      id,
-      updateRecursosLeccionDto,
-    );
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.recursosLeccionService.remove(id);
+  findByLeccion(@Param("leccionId") leccionId: string) {
+    return this.recursoService.findByLeccion(leccionId);
   }
 }
