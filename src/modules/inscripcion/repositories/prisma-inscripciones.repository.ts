@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InscripcionesRepository } from 'src/modules/inscripcion/domain/repositories/inscripciones.repository';
+import { InscripcionesRepository } from 'src/modules/inscripcion/repositories/inscripciones.repository';
 
 @Injectable()
 export class PrismaInscripcionesRepository

@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProgresoModulosRepository } from 'src/modules/progreso-modulo/domain/repositories/progreso-modulos.repository';
-import { CreateProgresoModuloDto } from 'src/modules/progreso-modulo/presentation/dto/create-progreso-modulo.dto';
-import { UpdateProgresoModuloDto } from 'src/modules/progreso-modulo/presentation/dto/update-progreso-modulo.dto';
+import { ProgresoModulosRepository } from 'src/modules/progreso-modulo/repositories/progreso-modulos.repository';
+import { CreateProgresoModuloDto } from 'src/modules/progreso-modulo/dto/create-progreso-modulo.dto';
+import { UpdateProgresoModuloDto } from 'src/modules/progreso-modulo/dto/update-progreso-modulo.dto';
 
 @Injectable()
 export class ProgresosModulosService {
   constructor(
     private readonly progresoModulosRepository: ProgresoModulosRepository,
-  ) {}
+  ) { }
 
   async findAll() {
     return this.progresoModulosRepository.findAll();

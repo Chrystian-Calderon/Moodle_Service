@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InscripcionesRepository } from 'src/modules/inscripcion/domain/repositories/inscripciones.repository';
-import { CreateInscripcionDto } from 'src/modules/inscripcion/presentation/dto/create-inscripcion.dto';
-import { UpdateInscripcionDto } from '../../presentation/dto/update-inscripcion.dto';
-import { CreateInscripcionEstudiantesDto } from '../../presentation/dto/create-inscripcion-estudiantes.dto';
+import { InscripcionesRepository } from 'src/modules/inscripcion/repositories/inscripciones.repository';
+import { CreateInscripcionDto } from 'src/modules/inscripcion/dto/create-inscripcion.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
+import { CreateInscripcionEstudiantesDto } from './dto/create-inscripcion-estudiantes.dto';
 import { ModuloService } from 'src/modulo/modulo.service';
 import { UserService } from 'src/user/user.service';
 
