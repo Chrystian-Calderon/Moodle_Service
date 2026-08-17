@@ -7,13 +7,13 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ProgresosCursosService } from 'src/modules/progreso-curso/application/services/progresos-cursos.service';
-import { CreateProgresoCursoDto } from 'src/modules/progreso-curso/presentation/dto/create-progreso-curso.dto';
-import { UpdateProgresoCursoDto } from 'src/modules/progreso-curso/presentation/dto/update-progreso-curso.dto';
+import { ProgresosCursosService } from 'src/modules/progreso-curso/progresos-cursos.service';
+import { CreateProgresoCursoDto } from 'src/modules/progreso-curso/dto/create-progreso-curso.dto';
+import { UpdateProgresoCursoDto } from 'src/modules/progreso-curso/dto/update-progreso-curso.dto';
 
 @Controller('progreso-cursos')
 export class ProgresosCursosController {
-  constructor(private readonly progresosCursosService: ProgresosCursosService) {}
+  constructor(private readonly progresosCursosService: ProgresosCursosService) { }
 
   @Get()
   findAll() {

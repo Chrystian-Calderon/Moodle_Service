@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ProgresosModulosController } from './presentation/controllers/progresos-modulos.controller';
-import { ProgresosModulosService } from './application/services/progresos-modulos.service';
-import { ProgresoModulosRepository } from './domain/repositories/progreso-modulos.repository';
-import { PrismaProgresoModulosRepository } from './infrastructure/repositories/prisma-progreso-modulos.repository';
+import { ProgresosModulosController } from './progresos-modulos.controller';
+import { ProgresosModulosService } from './progresos-modulos.service';
+import { ProgresoModulosRepository } from './repositories/progreso-modulos.repository';
+import { PrismaProgresoModulosRepository } from './repositories/prisma-progreso-modulos.repository';
 
 @Module({
   controllers: [ProgresosModulosController],
@@ -14,4 +14,4 @@ import { PrismaProgresoModulosRepository } from './infrastructure/repositories/p
     },
   ],
 })
-export class ProgresoModuloModule {}
+export class ProgresoModuloModule { }
