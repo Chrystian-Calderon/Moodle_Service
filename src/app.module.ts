@@ -16,9 +16,6 @@ import { CursoModule } from './curso/curso.module';
 import { ProgresoLeccionModule } from './modules/progreso-leccion/progreso-leccion.module';
 import { ProgresoModuloModule } from './modules/progreso-modulo/progreso-modulo.module';
 import { ProgresoCursoModule } from './modules/progreso-curso/progreso-curso.module';
-import { FormularioModule } from './formulario/formulario.module';
-
-
 
 @Module({
   imports: [
@@ -35,7 +32,6 @@ import { FormularioModule } from './formulario/formulario.module';
     ProgresoLeccionModule,
     ProgresoModuloModule,
     ProgresoCursoModule,
-    FormularioModule,
   ],
   controllers: [AppController],
   providers: [AppService],
