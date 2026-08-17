@@ -1,6 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateRecursosLeccionDto } from './create-recursos-leccion.dto';
+import { PartialType } from "@nestjs/mapped-types";
+import { CreateRecursoLeccionDto } from "./create-recursos-leccion.dto";
 
-export class UpdateRecursosLeccionDto extends PartialType(
-  CreateRecursosLeccionDto,
-) {}
+export class UpdateRecursoLeccionDto extends PartialType(CreateRecursoLeccionDto) { }
