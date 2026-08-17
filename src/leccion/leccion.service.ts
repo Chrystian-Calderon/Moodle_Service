@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateLeccionDto } from "./dto/create-leccion.dto";
@@ -128,8 +128,43 @@ export class LeccionService {
     return this.prisma.leccion.update({ where: { id }, data: { estaPublicada: true } });
   }
 
-  async marcarCompletada(leccionId: string, estudianteId: string) {
-    const leccion = await this.findOne(leccionId);
+
+  async findFormularioPublico(leccionId: string) {
+    const formulario = await this.prisma.formularioLeccion.findUnique({
+      where: { leccionId },
+      include: {
+        preguntas: {
+          orderBy: { orden: "asc" },
+          select: {
+            id: true,
+            enunciado: true,
+            tipoPregunta: true,
+            orden: true,
+            opciones: {
+              orderBy: { orden: "asc" },
+              select: { id: true, texto: true, orden: true },
+            },
+          },
+        },
+      },
+    });
+
+    return formulario;
+  }
+
+  async marcarCompletada(
+    leccionId: string,
+    estudianteId: string,
+    respuestas?: { preguntaFormularioId: string; opcionFormularioId: string }[],
+  ) {
+    const leccion = await this.prisma.leccion.findUnique({
+      where: { id: leccionId },
+      include: { formulario: { include: { preguntas: { include: { opciones: true } } } } },
+    });
+
+    if (!leccion) {
+      throw new NotFoundException("Lección no encontrada");
+    }
 
     const inscripcion = await this.prisma.inscripcion.findFirst({
       where: { moduloId: leccion.moduloId, estudianteId },
@@ -143,7 +178,6 @@ export class LeccionService {
       where: { moduloId: leccion.moduloId, estaPublicada: true },
       orderBy: { orden: "asc" },
     });
-
     const index = lecciones.findIndex((l) => l.id === leccionId);
 
     if (index > 0 && leccion.requiereLeccionAnteriorCompletada) {
@@ -153,21 +187,58 @@ export class LeccionService {
       });
 
       if (!progresoAnterior?.completadoEn) {
-        throw new NotFoundException("Debes completar la lección anterior primero");
+        throw new BadRequestException("Debes completar la lección anterior primero");
       }
     }
 
-    return this.prisma.progresoLeccion.upsert({
+    const progreso = await this.prisma.progresoLeccion.upsert({
       where: { inscripcionId_leccionId: { inscripcionId: inscripcion.id, leccionId } },
-      update: { estado: "completada", porcentaje: 100, completadoEn: new Date(), desbloqueadoEn: new Date() },
+      update: {},
       create: {
         inscripcionId: inscripcion.id,
         leccionId,
-        estado: "completada",
-        porcentaje: 100,
+        estado: "en_progreso",
+        iniciadoEn: new Date(),
         desbloqueadoEn: new Date(),
-        completadoEn: new Date(),
       },
+    });
+
+    if (leccion.formulario) {
+      const preguntas = leccion.formulario.preguntas;
+
+      if (!respuestas || respuestas.length !== preguntas.length) {
+        throw new BadRequestException("Debes responder todas las preguntas del checkpoint");
+      }
+
+      let todasCorrectas = true;
+      const filas = respuestas.map((r) => {
+        const pregunta = preguntas.find((p) => p.id === r.preguntaFormularioId);
+        if (!pregunta) throw new BadRequestException("Pregunta inválida para esta lección");
+
+        const opcion = pregunta.opciones.find((o) => o.id === r.opcionFormularioId);
+        if (!opcion) throw new BadRequestException("Opción inválida para esta pregunta");
+
+        if (!opcion.esCorrecta) todasCorrectas = false;
+
+        return {
+          progresoLeccionId: progreso.id,
+          preguntaFormularioId: pregunta.id,
+          opcionFormularioId: opcion.id,
+          esCorrecta: opcion.esCorrecta,
+        };
+      });
+
+      await this.prisma.respuestaFormulario.deleteMany({ where: { progresoLeccionId: progreso.id } });
+      await this.prisma.respuestaFormulario.createMany({ data: filas });
+
+      if (!todasCorrectas) {
+        throw new BadRequestException("Alguna respuesta es incorrecta. Vuelve a intentarlo.");
+      }
+    }
+
+    return this.prisma.progresoLeccion.update({
+      where: { id: progreso.id },
+      data: { estado: "completada", porcentaje: 100, completadoEn: new Date() },
     });
   }
 }
