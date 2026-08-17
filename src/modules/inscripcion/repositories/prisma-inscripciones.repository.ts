@@ -8,7 +8,24 @@ export class PrismaInscripcionesRepository
   constructor(private readonly prisma: PrismaService) { }
 
   async findAll() {
-    return this.prisma.inscripcion.findMany();
+    return this.prisma.inscripcion.findMany({
+      include: {
+        modulo: {
+          select: {
+            nombre: true,
+          }
+        },
+        estudiante: {
+          select: {
+            perfil: {
+              select: {
+                nombre: true,
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   async findById(id: string) {
