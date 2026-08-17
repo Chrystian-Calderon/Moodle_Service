@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ProgresosLeccionesController } from './presentation/controllers/progresos-lecciones.controller';
-import { ProgresosLeccionesService } from './application/services/progresos-lecciones.service';
-import { ProgresoLeccionesRepository } from './domain/repositories/progreso-lecciones.repository';
-import { PrismaProgresoLeccionesRepository } from './infrastructure/repositories/prisma-progreso-lecciones.repository';
+import { ProgresosLeccionesController } from './progresos-lecciones.controller';
+import { ProgresosLeccionesService } from './progresos-lecciones.service';
+import { ProgresoLeccionesRepository } from './repositories/progreso-lecciones.repository';
+import { PrismaProgresoLeccionesRepository } from './repositories/prisma-progreso-lecciones.repository';
 
 @Module({
   controllers: [ProgresosLeccionesController],
@@ -14,4 +14,4 @@ import { PrismaProgresoLeccionesRepository } from './infrastructure/repositories
     },
   ],
 })
-export class ProgresoLeccionModule {}
+export class ProgresoLeccionModule { }

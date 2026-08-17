@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InscripcionesRepository } from 'src/modules/inscripcion/domain/repositories/inscripciones.repository';
+import { InscripcionesRepository } from 'src/modules/inscripcion/repositories/inscripciones.repository';
 
 @Injectable()
 export class PrismaInscripcionesRepository
@@ -8,7 +8,24 @@ export class PrismaInscripcionesRepository
   constructor(private readonly prisma: PrismaService) { }
 
   async findAll() {
-    return this.prisma.inscripcion.findMany();
+    return this.prisma.inscripcion.findMany({
+      include: {
+        modulo: {
+          select: {
+            nombre: true,
+          }
+        },
+        estudiante: {
+          select: {
+            perfil: {
+              select: {
+                nombre: true,
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   async findById(id: string) {

@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ProgresoLeccionesRepository } from 'src/modules/progreso-leccion/domain/repositories/progreso-lecciones.repository';
+import { ProgresoLeccionesRepository } from 'src/modules/progreso-leccion/repositories/progreso-lecciones.repository';
 
 @Injectable()
 export class PrismaProgresoLeccionesRepository
-  implements ProgresoLeccionesRepository
-{
-  constructor(private readonly prisma: PrismaService) {}
+  implements ProgresoLeccionesRepository {
+  constructor(private readonly prisma: PrismaService) { }
 
   async findAll() {
     return this.prisma.progresoLeccion.findMany();

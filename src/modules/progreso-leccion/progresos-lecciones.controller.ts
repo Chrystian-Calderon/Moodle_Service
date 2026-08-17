@@ -7,15 +7,15 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ProgresosLeccionesService } from 'src/modules/progreso-leccion/application/services/progresos-lecciones.service';
-import { CreateProgresoLeccionDto } from 'src/modules/progreso-leccion/presentation/dto/create-progreso-leccion.dto';
-import { UpdateProgresoLeccionDto } from 'src/modules/progreso-leccion/presentation/dto/update-progreso-leccion.dto';
+import { ProgresosLeccionesService } from 'src/modules/progreso-leccion/progresos-lecciones.service';
+import { CreateProgresoLeccionDto } from 'src/modules/progreso-leccion/dto/create-progreso-leccion.dto';
+import { UpdateProgresoLeccionDto } from 'src/modules/progreso-leccion/dto/update-progreso-leccion.dto';
 
 @Controller('progreso-lecciones')
 export class ProgresosLeccionesController {
   constructor(
     private readonly progresoLeccionesService: ProgresosLeccionesService,
-  ) {}
+  ) { }
 
   @Get()
   findAll() {

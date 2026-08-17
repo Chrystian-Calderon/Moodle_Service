@@ -1,12 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InscripcionesRepository } from 'src/modules/inscripcion/domain/repositories/inscripciones.repository';
-import { CreateInscripcionDto } from 'src/modules/inscripcion/presentation/dto/create-inscripcion.dto';
-import { UpdateInscripcionDto } from '../../presentation/dto/update-inscripcion.dto';
-import { CreateInscripcionEstudiantesDto } from '../../presentation/dto/create-inscripcion-estudiantes.dto';
+import { InscripcionesRepository } from 'src/modules/inscripcion/repositories/inscripciones.repository';
+import { CreateInscripcionDto } from 'src/modules/inscripcion/dto/create-inscripcion.dto';
+import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
+import { CreateInscripcionEstudiantesDto } from './dto/create-inscripcion-estudiantes.dto';
+import { ModuloService } from 'src/modulo/modulo.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class InscripcionesService {
-  constructor(private readonly inscripcionesRepository: InscripcionesRepository) { }
+  constructor(
+    private readonly inscripcionesRepository: InscripcionesRepository,
+    private readonly moduloService: ModuloService,
+    private readonly usuarioService: UserService,
+  ) { }
 
   private generarNumeroInscripcion(): string {
     return `INS-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -21,6 +27,14 @@ export class InscripcionesService {
   }
 
   async create(data: CreateInscripcionDto) {
+    const [modulo, estudiante] = await Promise.all([
+      this.moduloService.findOne(data.moduloId),
+      this.usuarioService.findOne(data.estudianteId)
+    ]);
+
+    if (!modulo) throw new NotFoundException('Módulo no encontrado1');
+    if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
+
     const numeroInscripcion = this.generarNumeroInscripcion();
     return this.inscripcionesRepository.create({
       ...data,
