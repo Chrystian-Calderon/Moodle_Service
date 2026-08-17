@@ -4,3 +4,7 @@ export interface AuthenticatedUser {
     roles: string[];
     permisos: string[];
 }
+
+export interface AuthenticatedRequest {
+    user: AuthenticatedUser;
+}
