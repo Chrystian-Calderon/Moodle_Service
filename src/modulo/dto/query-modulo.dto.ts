@@ -21,7 +21,6 @@ export class QueryModuloDto {
     @IsString()
     nombre?: string;
 
-    // Filtra por Curso.categoria (relación), no existe en Modulo
     @IsOptional()
     @IsString()
     categoria?: string;
