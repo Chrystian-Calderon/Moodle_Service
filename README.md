@@ -2,97 +2,379 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Moodle Service API
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+API RESTful para gestión de plataforma LMS (Learning Management System) desarrollada con NestJS, Prisma ORM y PostgreSQL.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tabla de Contenidos
 
-## Project setup
+1. [Descripción](#descripción)
+2. [Estructura del Proyecto](#estructura-del-proyecto)
+3. [Módulos](#módulos)
+   - [Autenticación (Auth)](#1-autenticación-auth)
+   - [Usuarios (User)](#2-usuarios-user)
+   - [Roles (Rols)](#3-roles-rols)
+   - [Permisos (Permissions)](#4-permisos-permissions)
+   - [Menús (Menus)](#5-menus-menus)
+   - [Cursos (Curso)](#6-cursos-curso)
+   - [Módulos de Curso (Modulo)](#7-módulos-de-curso-modulo)
+   - [Lecciones (Leccion)](#8-lecciones-leccion)
+   - [Recursos de Lección (Recursos Leccion)](#9-recursos-de-lección-recursos-leccion)
+   - [Inscripción](#10-inscripción)
+   - [Progreso de Curso](#11-progreso-de-curso)
+   - [Progreso de Módulo](#12-progreso-de-módulo)
+   - [Progreso de Lección](#13-progreso-de-lección)
+4. [Infraestructura](#infraestructura)
+   - [Prisma (ORM)](#prisma-orm)
+   - [Servicios Comunes (Common)](#servicios-comunes-common)
+5. [Configuración e Instalación](#configuración-e-instalación)
+6. [Scripts Disponibles](#scripts-disponibles)
+7. [Base de Datos](#base-de-datos)
+8. [Licencia](#licencia)
 
-```bash
-$ pnpm install
+---
+
+## Descripción
+
+Moodle Service API es el backend del sistema LMS que permite la gestión de cursos, módulos, lecciones, usuarios y seguimiento del progreso de aprendizaje. La API expone endpoints RESTful para ser consumidos por un frontend (app web o móvil).
+
+---
+
+## Estructura del Proyecto
+
+```
+src/
+├── app.module.ts                 # Módulo raíz de la aplicación
+├── main.ts                       # Punto de entrada
+├── auth/                         # Módulo de autenticación (JWT, Guards, Strategies)
+├── user/                         # Gestión de usuarios
+├── rols/                         # Gestión de roles
+├── permissions/                  # Gestión de permisos
+├── menus/                        # Gestión de menús
+├── curso/                        # Gestión de cursos
+├── modulo/                       # Gestión de módulos de cursos
+├── leccion/                      # Gestión de lecciones
+├── recursos-leccion/             # Recursos asociados a lecciones
+├── modules/                      # Módulos compuestos
+│   ├── inscripcion/              # Inscripciones de usuarios a cursos
+│   ├── progreso-curso/           # Seguimiento de progreso en cursos
+│   ├── progreso-modulo/          # Seguimiento de progreso en módulos
+│   └── progreso-leccion/         # Seguimiento de progreso en lecciones
+├── prisma/                       # Servicio de conexión a base de datos
+└── common/                       # Utilidades compartidas
+    ├── decorator/
+    ├── filters/
+    ├── guards/
+    └── types/
 ```
 
-## Compile and run the project
+---
+
+## Módulos
+
+### 1. Autenticación (Auth)
+**Ruta base:** `/auth`
+
+Gestiona la autenticación de usuarios mediante JWT (JSON Web Tokens).
+
+| Archivo | Descripción |
+|---------|-------------|
+| `auth.controller.ts` | Endpoints de login, registro, refresh token |
+| `auth.service.ts` | Lógica de autenticación y validación |
+| `auth.module.ts` | Configuración del módulo |
+| `dto/` | Data Transfer Objects para requests |
+| `guards/` | Guards de autenticación (JwtAuthGuard) |
+| `strategies/` | Estrategias de Passport (JwtStrategy) |
+
+---
+
+### 2. Usuarios (User)
+**Ruta base:** `/users`
+
+CRUD completo de usuarios del sistema.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `user.controller.ts` | Endpoints de usuarios |
+| `user.service.ts` | Lógica de negocio |
+| `user.module.ts` | Configuración del módulo |
+| `dto/` | DTOs para crear/actualizar usuarios |
+| `entities/` | Entidades/interfaz de usuario |
+
+---
+
+### 3. Roles (Rols)
+**Ruta base:** `/rols`
+
+Gestión de roles del sistema (admin, profesor, estudiante, etc.).
+
+| Archivo | Descripción |
+|---------|-------------|
+| `rols.controller.ts` | Endpoints de roles |
+| `rols.service.ts` | Lógica de negocio |
+| `rols.module.ts` | Configuración del módulo |
+
+---
+
+### 4. Permisos (Permissions)
+**Ruta base:** `/permissions`
+
+Gestión de permisos asociados a roles.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `permissions.controller.ts` | Endpoints de permisos |
+| `permissions.service.ts` | Lógica de negocio |
+| `permissions.module.ts` | Configuración del módulo |
+
+---
+
+### 5. Menús (Menus)
+**Ruta base:** `/menus`
+
+Gestión de menús de navegación del sistema.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `menus.controller.ts` | Endpoints de menús |
+| `menus.service.ts` | Lógica de negocio |
+| `menus.module.ts` | Configuración del módulo |
+
+---
+
+### 6. Cursos (Curso)
+**Ruta base:** `/cursos`
+
+CRUD de cursos disponibles en la plataforma.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `curso.controller.ts` | Endpoints de cursos |
+| `curso.service.ts` | Lógica de negocio |
+| `curso.module.ts` | Configuración del módulo |
+| `dto/` | DTOs para crear/actualizar cursos |
+| `entities/` | Entidades/interfaz de curso |
+
+---
+
+### 7. Módulos de Curso (Modulo)
+**Ruta base:** `/modulos`
+
+Gestión de módulos que componen un curso.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `modulo.controller.ts` | Endpoints de módulos |
+| `modulo.service.ts` | Lógica de negocio |
+| `modulo.module.ts` | Configuración del módulo |
+
+---
+
+### 8. Lecciones (Leccion)
+**Ruta base:** `/lecciones`
+
+Gestión de lecciones dentro de un módulo.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `leccion.controller.ts` | Endpoints de lecciones |
+| `leccion.service.ts` | Lógica de negocio |
+| `leccion.module.ts` | Configuración del módulo |
+
+---
+
+### 9. Recursos de Lección (Recursos Leccion)
+**Ruta base:** `/recursos-leccion`
+
+Gestión de recursos (archivos, enlaces, documentos) asociados a lecciones.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `recursos-leccion.controller.ts` | Endpoints de recursos |
+| `recursos-leccion.service.ts` | Lógica de negocio |
+| `recursos-leccion.module.ts` | Configuración del módulo |
+
+---
+
+### 10. Inscripción
+**Ruta base:** `/inscripciones`
+
+Gestión de inscripciones de usuarios a cursos.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `inscripciones.controller.ts` | Endpoints de inscripciones |
+| `inscripciones.service.ts` | Lógica de negocio |
+| `inscripcion.module.ts` | Configuración del módulo |
+| `repositories/` | Capa de acceso a datos |
+| `dto/` | DTOs para inscripciones |
+| `entities/` | Entidades de inscripción |
+
+---
+
+### 11. Progreso de Curso
+**Ruta base:** `/progresos-cursos`
+
+Seguimiento del progreso general de un usuario en un curso.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `progresos-cursos.controller.ts` | Endpoints de progreso |
+| `progresos-cursos.service.ts` | Lógica de negocio |
+| `progreso-curso.module.ts` | Configuración del módulo |
+| `repositories/` | Capa de acceso a datos |
+
+---
+
+### 12. Progreso de Módulo
+**Ruta base:** `/progresos-modulos`
+
+Seguimiento del progreso de un usuario en módulos específicos.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `progresos-modulos.controller.ts` | Endpoints de progreso |
+| `progresos-modulos.service.ts` | Lógica de negocio |
+| `progreso-modulo.module.ts` | Configuración del módulo |
+| `repositories/` | Capa de acceso a datos |
+
+---
+
+### 13. Progreso de Lección
+**Ruta base:** `/progresos-lecciones`
+
+Seguimiento del progreso de un usuario en lecciones específicas.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `progresos-lecciones.controller.ts` | Endpoints de progreso |
+| `progresos-lecciones.service.ts` | Lógica de negocio |
+| `progreso-leccion.module.ts` | Configuración del módulo |
+| `repositories/` | Capa de acceso a datos |
+
+---
+
+## Infraestructura
+
+### Prisma ORM
+**Directorio:** `src/prisma/`
+
+Servicio centralizado de conexión a la base de datos PostgreSQL.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `prisma.service.ts` | Servicio de conexión y manejo de transacciones |
+| `prisma.module.ts` | Módulo global de Prisma |
+
+**Schema:** `prisma/schema.prisma`
+
+### Servicios Comunes (Common)
+**Directorio:** `src/common/`
+
+Utilidades compartidas entre módulos.
+
+| Subdirectorio | Descripción |
+|---------------|-------------|
+| `decorator/` | Decoradores personalizados |
+| `filters/` | Filtros de excepciones |
+| `guards/` | Guards de autorización |
+| `types/` | Tipos e interfaces compartidas |
+
+---
+
+## Configuración e Instalación
+
+### Prerrequisitos
+- Node.js >= 18
+- PostgreSQL
+- pnpm
+
+### Instalación
 
 ```bash
-# development
-$ pnpm run start
+# Clonar el repositorio
+git clone <url-del-repositorio>
 
-# watch mode
-$ pnpm run start:dev
+# Instalar dependencias
+pnpm install
 
-# production mode
-$ pnpm run start:prod
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con los valores de tu base de datos
+
+# Ejecutar migraciones de Prisma
+npx prisma migrate dev
+
+# Generar cliente Prisma
+npx prisma generate
 ```
 
-## Run tests
+### Variables de Entorno (`.env`)
+
+```env
+DATABASE_URL="postgresql://usuario:password@localhost:5432/moodle_db"
+JWT_SECRET="tu-secreto-jwt"
+JWT_EXPIRATION="1h"
+```
+
+---
+
+## Scripts Disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm run start` | Iniciar en modo desarrollo |
+| `pnpm run start:dev` | Iniciar con hot-reload (watch mode) |
+| `pnpm run start:debug` | Iniciar en modo debug |
+| `pnpm run start:prod` | Iniciar en modo producción |
+| `pnpm run build` | Compilar el proyecto |
+| `pnpm run lint` | Ejecutar linter (ESLint) |
+| `pnpm run format` | Formatear código con Prettier |
+| `pnpm run test` | Ejecutar tests unitarios |
+| `pnpm run test:e2e` | Ejecutar tests end-to-end |
+| `pnpm run test:cov` | Ejecutar tests con cobertura |
+
+---
+
+## Base de Datos
+
+### Esquema de Relaciones
+
+```
+User ──┬── Rol ──── Permissions
+       │
+       ├── Inscripción ── Curso ── Modulo ── Leccion ── RecursosLeccion
+       │                      │         │         │
+       │                      │         │         └── ProgresoLeccion
+       │                      │         └── ProgresoModulo
+       │                      └── ProgresoCurso
+       │
+       └── Menus
+```
+
+### Comandos de Prisma
 
 ```bash
-# unit tests
-$ pnpm run test
+# Crear migración
+npx prisma migrate dev --name nombre_migracion
 
-# e2e tests
-$ pnpm run test:e2e
+# Aplicar migraciones en producción
+npx prisma migrate deploy
 
-# test coverage
-$ pnpm run test:cov
+# Abrir Prisma Studio (UI visual)
+npx prisma studio
+
+# Resetear base de datos
+npx prisma migrate reset
+
+# Sembrar datos iniciales
+npx prisma db seed
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Licencia
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Este proyecto es privado. Todos los derechos reservados.
