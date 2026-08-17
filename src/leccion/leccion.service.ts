@@ -15,7 +15,20 @@ export class LeccionService {
       throw new NotFoundException("El módulo indicado no existe");
     }
 
-    return this.prisma.leccion.create({ data: dto });
+    return this.prisma.$transaction(async (tx) => {
+      const totalLecciones = await tx.leccion.count({ where: { moduloId: dto.moduloId } });
+
+      const ordenDeseado = dto.orden ?? totalLecciones + 1;
+      const ordenFinal = Math.min(Math.max(ordenDeseado, 1), totalLecciones + 1);
+
+      if (ordenFinal <= totalLecciones) {
+        await tx.leccion.updateMany({
+          where: { moduloId: dto.moduloId, orden: { gte: ordenFinal } },
+          data: { orden: { increment: 1 } },
+        });
+      }
+      return tx.leccion.create({ data: { ...dto, orden: ordenFinal } });
+    });
   }
 
   async findByModulo(moduloId: string, query: QueryLeccionDto) {
@@ -114,7 +127,26 @@ export class LeccionService {
   }
 
   async update(id: string, dto: UpdateLeccionDto) {
-    await this.findOne(id);
+    const leccion = await this.findOne(id);
+
+    if (dto.orden !== undefined && dto.orden !== leccion.orden) {
+      return this.prisma.$transaction(async (tx) => {
+        const total = await tx.leccion.count({ where: { moduloId: leccion.moduloId } });
+        const nuevoOrden = Math.min(Math.max(dto.orden!, 1), total);
+        if (nuevoOrden > leccion.orden) {
+          await tx.leccion.updateMany({
+            where: { moduloId: leccion.moduloId, orden: { gt: leccion.orden, lte: nuevoOrden } },
+            data: { orden: { decrement: 1 } },
+          });
+        } else {
+          await tx.leccion.updateMany({
+            where: { moduloId: leccion.moduloId, orden: { gte: nuevoOrden, lt: leccion.orden } },
+            data: { orden: { increment: 1 } },
+          });
+        }
+        return tx.leccion.update({ where: { id }, data: { ...dto, orden: nuevoOrden } });
+      });
+    }
     return this.prisma.leccion.update({ where: { id }, data: dto });
   }
 
