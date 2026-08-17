@@ -46,6 +46,11 @@ export class CursoController {
     );
   }
 
+  @Get('curso-modulos')
+  obtenerCursos() {
+    return this.cursoService.obtenerCursos();
+  }
+
   @Get(':id/modulos')
   findModulos(@Param('id') id: string) {
     return this.cursoService.findModulos(id);
