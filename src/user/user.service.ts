@@ -83,8 +83,12 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    return await this.prisma.usuario.findUnique({
+      where: {
+        id: id.toString(),
+      },
+    });
   }
 
   async actualizarUsuario(id: string, data: UpdateUsuarioDto) {
@@ -414,4 +418,19 @@ export class UserService {
     )
   }
 
+  async ObtenerEstudiantes() {
+    const estudiantes = await this.prisma.usuario.findMany({
+      where: {
+        roles: {
+          some: {
+            rol: {
+              nombre: 'ESTUDIANTE',
+            },
+          },
+        },
+      },
+    });
+
+    return estudiantes;
+  }
 }

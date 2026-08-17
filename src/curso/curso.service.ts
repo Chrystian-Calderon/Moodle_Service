@@ -157,4 +157,22 @@ export class CursoService {
           Boolean(categoria)
       );
   }
+
+  // obtener todos los cursos sin paginación ni filtros con modulos (id, nombre)
+  async obtenerCursos() {
+    const cursos = await this.prisma.curso.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        modulos: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
+      },
+    });
+
+    return cursos;
+  }
 }
