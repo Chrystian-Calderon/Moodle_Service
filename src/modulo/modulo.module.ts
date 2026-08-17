@@ -5,5 +5,6 @@ import { ModuloController } from './modulo.controller';
 @Module({
   controllers: [ModuloController],
   providers: [ModuloService],
+  exports: [ModuloService],
 })
-export class ModuloModule {}
+export class ModuloModule { }
