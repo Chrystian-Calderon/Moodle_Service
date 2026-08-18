@@ -9,11 +9,16 @@ import {
   Query,
   DefaultValuePipe,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 import { CursoService } from './curso.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from 'src/auth/guards/permission.guard';
+import { Permission } from 'src/auth/enums/permission.enum';
+import { Permissions } from 'src/auth/decorators/permission.decorator';
 
 @Controller('curso')
 export class CursoController {
@@ -47,6 +52,8 @@ export class CursoController {
   }
 
   @Get('curso-modulos')
+  @UseGuards(PermissionsGuard)
+  @Permissions(Permission.CURSO_VER)
   obtenerCursos() {
     return this.cursoService.obtenerCursos();
   }
