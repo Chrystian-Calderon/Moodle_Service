@@ -1,68 +1,43 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateRecursosLeccionDto } from './dto/create-recursos-leccion.dto';
-import { UpdateRecursosLeccionDto } from './dto/update-recursos-leccion.dto';
-import { RecursosLeccion } from './entities/recursos-leccion.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateRecursoLeccionDto } from "./dto/create-recursos-leccion.dto";
+import { UpdateRecursoLeccionDto } from "./dto/update-recursos-leccion.dto";
 
 @Injectable()
-export class RecursosLeccionService {
-  private recursos: RecursosLeccion[] = [];
+export class RecursoLeccionService {
+  constructor(private readonly prisma: PrismaService) { }
 
-  create(createRecursosLeccionDto: CreateRecursosLeccionDto) {
-    const nuevoRecurso: RecursosLeccion = {
-      id: Date.now().toString(),
-      leccionId: createRecursosLeccionDto.leccionId,
-      nombre: createRecursosLeccionDto.nombre,
-      descripcion: createRecursosLeccionDto.descripcion,
-      tipoRecurso: createRecursosLeccionDto.tipoRecurso,
-      rutaRecurso: createRecursosLeccionDto.rutaRecurso,
-      urlExterna: createRecursosLeccionDto.urlExterna,
-      orden: createRecursosLeccionDto.orden ?? 0,
-      creadoEn: new Date(),
-      actualizadoEn: new Date(),
-    };
-
-    this.recursos.push(nuevoRecurso);
-
-    return nuevoRecurso;
-  }
-
-  findAll() {
-    return this.recursos;
-  }
-
-  findOne(id: string) {
-    const recurso = this.recursos.find((recurso) => recurso.id === id);
-
-    if (!recurso) {
-      throw new NotFoundException('Recurso de lección no encontrado');
+  async create(leccionId: string, dto: CreateRecursoLeccionDto) {
+    const leccion = await this.prisma.leccion.findUnique({ where: { id: leccionId } });
+    if (!leccion) {
+      throw new NotFoundException("Lección no encontrada");
     }
 
-    return recurso;
+    return this.prisma.recursosLeccion.create({ data: { ...dto, leccionId } });
   }
 
-  update(
-    id: string,
-    updateRecursosLeccionDto: UpdateRecursosLeccionDto,
-  ) {
-    const recurso = this.findOne(id);
-
-    Object.assign(recurso, updateRecursosLeccionDto, {
-      actualizadoEn: new Date(),
+  async findByLeccion(leccionId: string) {
+    return this.prisma.recursosLeccion.findMany({
+      where: { leccionId },
+      orderBy: { orden: "asc" },
     });
+  }
 
+  async findOne(id: string) {
+    const recurso = await this.prisma.recursosLeccion.findUnique({ where: { id } });
+    if (!recurso) {
+      throw new NotFoundException("Recurso no encontrado");
+    }
     return recurso;
   }
 
-  remove(id: string) {
-    const recurso = this.findOne(id);
+  async update(id: string, dto: UpdateRecursoLeccionDto) {
+    await this.findOne(id);
+    return this.prisma.recursosLeccion.update({ where: { id }, data: dto });
+  }
 
-    this.recursos = this.recursos.filter(
-      (recurso) => recurso.id !== id,
-    );
-
-    return {
-      mensaje: 'Recurso de lección eliminado correctamente',
-      recurso,
-    };
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.recursosLeccion.delete({ where: { id } });
   }
 }
