@@ -17,6 +17,8 @@ import { ProgresoLeccionModule } from './modules/progreso-leccion/progreso-lecci
 import { ProgresoModuloModule } from './modules/progreso-modulo/progreso-modulo.module';
 import { ProgresoCursoModule } from './modules/progreso-curso/progreso-curso.module';
 import { FormularioLeccionModule } from './formulario-leccion/formulario-leccion.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -36,6 +38,12 @@ import { FormularioLeccionModule } from './formulario-leccion/formulario-leccion
     FormularioLeccionModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    }
+  ],
 })
 export class AppModule { }
