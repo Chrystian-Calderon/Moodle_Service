@@ -1,3 +1,32 @@
+type EstudianteConInscripciones = {
+  id: string;
+  correo: string;
+
+  perfil: {
+    nombre: string | null;
+    apellidoPaterno: string | null;
+    apellidoMaterno: string | null;
+  } | null;
+
+  inscripciones: {
+    id: string;
+    numeroInscripcion: string;
+    estadoAcceso: string;
+
+    modulo: {
+      id: string;
+      nombre: string;
+      orden: number;
+
+      curso: {
+        id: string;
+        nombre: string;
+        categoria: string | null;
+      };
+    };
+  }[];
+};
+
 export abstract class InscripcionesRepository {
   abstract findAll(): Promise<unknown[]>;
 
@@ -14,15 +43,8 @@ export abstract class InscripcionesRepository {
   abstract delete(id: string): Promise<void>;
 
   // metodo obtener inscripciones paginado
-  abstract findAllPaginated(page: number, limit: number): Promise<{
-    data: unknown[];
-    meta: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-  }>;
+  abstract findEstudianteWithInscripciones(skip: number, take: number): Promise<EstudianteConInscripciones[]>;
+  abstract countEstudiantesWithInscripciones(): Promise<number>;
 
   // metodo crear inscripcion con varios estudianteId
   abstract createMultiple(data: {
