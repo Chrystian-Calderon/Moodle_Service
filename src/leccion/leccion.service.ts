@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateLeccionDto } from "./dto/create-leccion.dto";
@@ -113,18 +113,79 @@ export class LeccionService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, estudianteId?: string, esAdmin = false) {
     const leccion = await this.prisma.leccion.findUnique({
       where: { id },
-      include: { recursos: { orderBy: { orden: "asc" } }, modulo: { select: { id: true, nombre: true, cursoId: true } } },
+      include: {
+        recursos: { orderBy: { orden: "asc" } },
+        modulo: { select: { id: true, nombre: true, cursoId: true } },
+      },
     });
 
     if (!leccion) {
       throw new NotFoundException("Lección no encontrada");
     }
 
-    return leccion;
+    if (esAdmin || !estudianteId) {
+      return { ...leccion, bloqueada: false, motivoBloqueo: null };
+    }
+
+    const acceso = await this.verificarAcceso(leccion, estudianteId);
+
+    if (!acceso.puedeAcceder) {
+      return {
+        ...leccion,
+        contenidoHtml: null,
+        urlVideo: null,
+        proveedorVideo: null,
+        recursos: [],
+        bloqueada: true,
+        motivoBloqueo: acceso.motivo,
+      };
+    }
+
+    return { ...leccion, bloqueada: false, motivoBloqueo: null };
   }
+
+  private async verificarAcceso(
+    leccion: { id: string; moduloId: string; esVistaPrevia: boolean; requiereLeccionAnteriorCompletada: boolean },
+    estudianteId: string,
+  ): Promise<{ puedeAcceder: boolean; motivo: "no_inscrito" | "leccion_anterior_pendiente" | null }> {
+    if (leccion.esVistaPrevia) {
+      return { puedeAcceder: true, motivo: null };
+    }
+
+    const inscripcion = await this.prisma.inscripcion.findFirst({
+      where: { moduloId: leccion.moduloId, estudianteId },
+    });
+
+    if (!inscripcion) {
+      return { puedeAcceder: false, motivo: "no_inscrito" };
+    }
+
+    if (leccion.requiereLeccionAnteriorCompletada) {
+      const lecciones = await this.prisma.leccion.findMany({
+        where: { moduloId: leccion.moduloId, estaPublicada: true },
+        orderBy: { orden: "asc" },
+      });
+
+      const index = lecciones.findIndex((l) => l.id === leccion.id);
+
+      if (index > 0) {
+        const anterior = lecciones[index - 1];
+        const progresoAnterior = await this.prisma.progresoLeccion.findUnique({
+          where: { inscripcionId_leccionId: { inscripcionId: inscripcion.id, leccionId: anterior.id } },
+        });
+
+        if (!progresoAnterior?.completadoEn) {
+          return { puedeAcceder: false, motivo: "leccion_anterior_pendiente" };
+        }
+      }
+    }
+
+    return { puedeAcceder: true, motivo: null };
+  }
+
 
   async update(id: string, dto: UpdateLeccionDto) {
     const leccion = await this.findOne(id);
@@ -203,8 +264,12 @@ export class LeccionService {
     });
 
     if (!inscripcion) {
-      throw new NotFoundException("No tienes una inscripción activa en este módulo");
+      throw new ForbiddenException({
+        message: "No tienes una inscripción activa en este módulo",
+        error: "no_inscrito",
+      });
     }
+
 
     const lecciones = await this.prisma.leccion.findMany({
       where: { moduloId: leccion.moduloId, estaPublicada: true },
@@ -219,7 +284,10 @@ export class LeccionService {
       });
 
       if (!progresoAnterior?.completadoEn) {
-        throw new BadRequestException("Debes completar la lección anterior primero");
+        throw new BadRequestException({
+          message: "Debes completar la lección anterior primero",
+          error: "leccion_anterior_pendiente",
+        });
       }
     }
 

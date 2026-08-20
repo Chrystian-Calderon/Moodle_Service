@@ -13,6 +13,17 @@ export abstract class InscripcionesRepository {
 
   abstract delete(id: string): Promise<void>;
 
+  // metodo obtener inscripciones paginado
+  abstract findAllPaginated(page: number, limit: number): Promise<{
+    data: unknown[];
+    meta: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }>;
+
   // metodo crear inscripcion con varios estudianteId
   abstract createMultiple(data: {
     moduloId: string;

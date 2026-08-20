@@ -31,8 +31,10 @@ export class LeccionController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.leccionService.findOne(id);
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param("id") id: string, @Request() req: AuthenticatedRequest) {
+    const esAdmin = req.user.permisos.includes("lecciones.editar");
+    return this.leccionService.findOne(id, req.user.id, esAdmin);
   }
 
   @Patch(":id")
