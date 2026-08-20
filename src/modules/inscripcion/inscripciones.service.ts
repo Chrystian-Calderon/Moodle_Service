@@ -6,6 +6,30 @@ import { CreateInscripcionEstudiantesDto } from './dto/create-inscripcion-estudi
 import { ModuloService } from 'src/modulo/modulo.service';
 import { UserService } from 'src/user/user.service';
 
+type ModuloAgrupado = {
+  id: string;
+  nombre: string;
+  orden: number;
+  estadoAcceso: string;
+  numeroInscripcion?: string;
+};
+
+type CursoAgrupado = {
+  id: string;
+  nombre: string;
+  categoria: string | null;
+  modulos: ModuloAgrupado[];
+};
+
+type EstudianteAgrupado = {
+  id: string;
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  correo: string;
+  cursos: CursoAgrupado[];
+};
+
 @Injectable()
 export class InscripcionesService {
   constructor(
@@ -63,7 +87,65 @@ export class InscripcionesService {
   }
 
   async findAllPaginated(page: number, limit: number) {
-    return this.inscripcionesRepository.findAllPaginated(page, limit);
+    const skip = (page - 1) * limit;
+    const [estudiantes, total] = await Promise.all([
+      this.inscripcionesRepository.findEstudianteWithInscripciones(skip, limit),
+      this.inscripcionesRepository.countEstudiantesWithInscripciones()
+    ]);
+
+    const resultado: EstudianteAgrupado[] = estudiantes.map((estudiante) => {
+      const cursos = new Map<string, CursoAgrupado>();
+
+      for (const inscripcion of estudiante.inscripciones) {
+        const cursoId = inscripcion.modulo.curso.id;
+
+        let curso = cursos.get(cursoId);
+
+        if (!curso) {
+          curso = {
+            id: cursoId,
+            nombre: inscripcion.modulo.curso.nombre,
+            categoria: inscripcion.modulo.curso.categoria,
+            modulos: [],
+          };
+
+          cursos.set(cursoId, curso);
+        }
+
+        curso.modulos.push({
+          id: inscripcion.modulo.id,
+          nombre: inscripcion.modulo.nombre,
+          orden: inscripcion.modulo.orden,
+          numeroInscripcion: inscripcion.numeroInscripcion,
+          estadoAcceso: inscripcion.estadoAcceso,
+        });
+      }
+
+      return {
+        id: estudiante.id,
+        nombre: estudiante.perfil?.nombre ?? '',
+        apellidoPaterno: estudiante.perfil?.apellidoPaterno ?? '',
+        apellidoMaterno: estudiante.perfil?.apellidoMaterno ?? '',
+        correo: estudiante.correo,
+
+        cursos: Array.from(cursos.values()).map((curso) => ({
+          ...curso,
+          modulos: curso.modulos.sort(
+            (a, b) => a.orden - b.orden,
+          ),
+        })),
+      };
+    });
+
+    return {
+      data: resultado,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      }
+    }
   }
 
   // metodo crear inscripcion con varios estudianteId
