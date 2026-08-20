@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { CreatePermissionRolDto } from './dto/crear-permission-rol.dto';
 
 @Controller('permissions')
 export class PermissionsController {
@@ -32,4 +33,9 @@ export class PermissionsController {
     return this.permissionsService.remove(+id);
   }
 
+  @Post('asignar-permiso')
+  asignarPermisoRol(@Body() asignarPermisoDto: CreatePermissionRolDto) {
+    const { rolId, permisoId } = asignarPermisoDto;
+    return this.permissionsService.asignarPermisoRol(rolId, permisoId);
+  }
 }
