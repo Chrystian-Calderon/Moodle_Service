@@ -35,6 +35,14 @@ export class InscripcionesService {
     if (!modulo) throw new NotFoundException('Módulo no encontrado1');
     if (!estudiante) throw new NotFoundException('Estudiante no encontrado');
 
+    // buscar si el estudiante ya está inscrito en el módulo
+    const inscripcionesExistentes = await this.inscripcionesRepository.findByEstudianteId(data.estudianteId);
+    const yaInscrito = inscripcionesExistentes.some((inscripcion: any) => inscripcion.moduloId === data.moduloId);
+
+    if (yaInscrito) {
+      throw new NotFoundException('El estudiante ya está inscrito en este módulo');
+    }
+
     const numeroInscripcion = this.generarNumeroInscripcion();
     return this.inscripcionesRepository.create({
       ...data,
@@ -54,12 +62,31 @@ export class InscripcionesService {
     return this.inscripcionesRepository.delete(id);
   }
 
+  async findAllPaginated(page: number, limit: number) {
+    return this.inscripcionesRepository.findAllPaginated(page, limit);
+  }
+
   // metodo crear inscripcion con varios estudianteId
   async createMultiple(data: CreateInscripcionEstudiantesDto) {
-    const numeroInscripciones = data.estudianteIds.map(() => this.generarNumeroInscripcion());
+    const [modulo, estudiantes] = await Promise.all([
+      this.moduloService.findOne(data.moduloId),
+      Promise.all(data.estudianteIds.map(id => this.usuarioService.findOne(id)))
+    ]);
+
+    if (!modulo) throw new NotFoundException('Módulo no encontrado');
+    const estudiantesExistentes = estudiantes.filter(estudiante => estudiante !== null);
+
+    // buscar si alguno de los estudiantes están inscritos
+    const inscripcionesExistentes = await Promise.all(estudiantesExistentes.map(estudiante => this.inscripcionesRepository.findByEstudianteId(estudiante.id)));
+    const estudiantesYaInscritos = inscripcionesExistentes.flat().filter((inscripcion: any) => inscripcion.moduloId === data.moduloId);
+
+    // filtrar los estudiantes
+    const estudiantesNoInscritos = estudiantesExistentes.filter(estudiante => !estudiantesYaInscritos.some((inscripcion: any) => inscripcion.estudianteId === estudiante.id));
+    const numeroInscripciones = estudiantesNoInscritos.map(() => this.generarNumeroInscripcion());
 
     return this.inscripcionesRepository.createMultiple({
-      ...data,
+      moduloId: data.moduloId,
+      estudianteIds: estudiantesNoInscritos.map(estudiante => estudiante.id),
       numeroInscripciones,
     });
   }

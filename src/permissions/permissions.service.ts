@@ -9,11 +9,13 @@ export class PermissionsService {
   constructor(private readonly prisma: PrismaService) { }
 
   create(createPermissionDto: CreatePermissionDto) {
-    return 'This action adds a new permission';
+    return this.prisma.permiso.create({
+      data: createPermissionDto,
+    });
   }
 
   findAll() {
-    return `This action returns all permissions`;
+    return this.prisma.permiso.findMany();
   }
 
   findOne(id: number) {
@@ -38,5 +40,32 @@ export class PermissionsService {
     });
 
     return permission;
+  }
+
+  async asignarPermisoRol(rolId: string, permisoId: string) {
+    const rol = await this.prisma.rol.findUnique({
+      where: { id: rolId },
+    });
+
+    if (!rol) {
+      throw new Error(`Rol con ID ${rolId} no encontrado`);
+    }
+
+    const permiso = await this.prisma.permiso.findUnique({
+      where: { id: permisoId },
+    });
+
+    if (!permiso) {
+      throw new Error(`Permiso con ID ${permisoId} no encontrado`);
+    }
+
+    await this.prisma.rolPermiso.create({
+      data: {
+        rolId,
+        permisoId,
+      },
+    });
+
+    return { message: `Permiso ${permiso.nombre} asignado al rol ${rol.nombre}` };
   }
 }

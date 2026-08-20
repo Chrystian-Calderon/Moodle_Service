@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
+import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateUsuarioDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -8,6 +9,66 @@ import * as bcrypt from 'bcrypt';
 export class UserService {
 
   constructor(private readonly prisma: PrismaService) { };
+
+  private async generateUsername(
+    nombre: string,
+    apellidoPaterno: string,
+    apellidoMaterno: string,
+  ): Promise<string> {
+    const normalize = (value: string) =>
+      value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .replace(/\s+/g, '.')
+        .replace(/[^a-z.]/g, '');
+
+    const nombreNormalizado = normalize(nombre);
+    const apellido1Normalizado = normalize(apellidoPaterno);
+    const apellido2Normalizado = normalize(apellidoMaterno);
+    const iniciales = apellido1Normalizado.charAt(0) + apellido2Normalizado.charAt(0);
+    const baseUsername = `${iniciales}${nombreNormalizado}`.toLowerCase();
+    let username = baseUsername;
+    let contador = 1;
+
+    while (
+      await this.prisma.usuario.findUnique({
+        where: { username },
+        select: { id: true },
+      })
+    ) {
+      username = `${baseUsername}${contador}`;
+      contador++;
+    }
+
+    return username;
+  }
+
+  private async hashPassword(
+    password: string,
+  ): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
+  private async getStudentRole() {
+    const role = await this.prisma.rol.findUnique({
+      where: {
+        nombre: 'ESTUDIANTE',
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!role) {
+      throw new Error(
+        'El rol ESTUDIANTE no está configurado',
+      );
+    }
+
+    return role;
+  }
 
   async create(createUserDto: CreateUserDto) {
     const {
@@ -64,6 +125,49 @@ export class UserService {
           data: {
             usuarioId: nuevoUsuario.id,
             rolId,
+          },
+        });
+
+        return nuevoUsuario;
+      },
+    );
+
+    return {
+      id: usuario.id,
+      username: usuario.username,
+      correo: usuario.correo,
+      estado: usuario.estado,
+    };
+  }
+
+  async createStudent(createStudentDto: CreateStudentDto) {
+    const { nombre, apellidoPaterno, apellidoMaterno, correo, numeroDocumento } = createStudentDto;
+    const username = await this.generateUsername(nombre, apellidoPaterno, apellidoMaterno);
+    const contrasenaHash = await this.hashPassword(numeroDocumento);
+    const studentRole = await this.getStudentRole();
+
+    const usuario = await this.prisma.$transaction(
+      async (tx) => {
+        const nuevoUsuario = await tx.usuario.create({
+          data: {
+            username,
+            correo,
+            contrasenaHash,
+            estado: 'pendiente',
+
+            perfil: {
+              create: {
+                nombre,
+                numeroDocumento,
+              },
+            },
+          },
+        });
+
+        await tx.usuarioRol.create({
+          data: {
+            usuarioId: nuevoUsuario.id,
+            rolId: studentRole.id,
           },
         });
 
