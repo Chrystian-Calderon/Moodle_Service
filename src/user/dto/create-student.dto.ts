@@ -5,6 +5,12 @@ export class CreateStudentDto {
   nombre!: string;
 
   @IsString()
+  apellidoPaterno!: string;
+
+  @IsString()
+  apellidoMaterno!: string;
+
+  @IsString()
   correo!: string;
 
   @IsString()

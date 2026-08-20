@@ -12,15 +12,23 @@ export class UserService {
 
   private async generateUsername(
     nombre: string,
+    apellidoPaterno: string,
+    apellidoMaterno: string,
   ): Promise<string> {
+    const normalize = (value: string) =>
+      value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .replace(/\s+/g, '.')
+        .replace(/[^a-z.]/g, '');
 
-    const baseUsername = nombre
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '');
-
+    const nombreNormalizado = normalize(nombre);
+    const apellido1Normalizado = normalize(apellidoPaterno);
+    const apellido2Normalizado = normalize(apellidoMaterno);
+    const iniciales = apellido1Normalizado.charAt(0) + apellido2Normalizado.charAt(0);
+    const baseUsername = `${iniciales}${nombreNormalizado}`.toLowerCase();
     let username = baseUsername;
     let contador = 1;
 
@@ -133,8 +141,8 @@ export class UserService {
   }
 
   async createStudent(createStudentDto: CreateStudentDto) {
-    const { nombre, correo, numeroDocumento } = createStudentDto;
-    const username = await this.generateUsername(nombre);
+    const { nombre, apellidoPaterno, apellidoMaterno, correo, numeroDocumento } = createStudentDto;
+    const username = await this.generateUsername(nombre, apellidoPaterno, apellidoMaterno);
     const contrasenaHash = await this.hashPassword(numeroDocumento);
     const studentRole = await this.getStudentRole();
 
