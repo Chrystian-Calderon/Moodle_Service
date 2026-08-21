@@ -12,7 +12,7 @@
 //   npx tsx prisma/seed-all.ts
 // (o npx ts-node prisma/seed-all.ts si usas ts-node)
 
-import "dotenv/config"; // asegura que DATABASE_URL se cargue desde .env aunque tsx no lo haga solo
+/*import "dotenv/config"; // asegura que DATABASE_URL se cargue desde .env aunque tsx no lo haga solo
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcrypt";
@@ -739,4 +739,4 @@ main()
     })
     .finally(async () => {
         await prisma.$disconnect();
-    });
+    });*/
