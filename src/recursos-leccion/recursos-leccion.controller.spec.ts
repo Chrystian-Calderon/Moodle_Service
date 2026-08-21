@@ -1,17 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RecursosLeccionController } from './recursos-leccion.controller';
-import { RecursosLeccionService } from './recursos-leccion.service';
+import { RecursoLeccionController } from './recursos-leccion.controller';
+import { RecursoLeccionService } from './recursos-leccion.service';
 
-describe('RecursosLeccionController', () => {
-  let controller: RecursosLeccionController;
+describe('RecursoLeccionController', () => {
+  let controller: RecursoLeccionController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [RecursosLeccionController],
-      providers: [RecursosLeccionService],
+      controllers: [RecursoLeccionController],
+      providers: [RecursoLeccionService],
     }).compile();
 
-    controller = module.get<RecursosLeccionController>(RecursosLeccionController);
+    controller = module.get<RecursoLeccionController>(
+      RecursoLeccionController,
+    );
   });
 
   it('should be defined', () => {
