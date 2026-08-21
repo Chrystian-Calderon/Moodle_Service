@@ -538,7 +538,6 @@ export class UserService {
   }
 
   async obtenerMiPerfil(usuarioId: string) {
-    console.log("se obtiene el id: ", usuarioId)
     const usuario = await this.prisma.usuario.findUnique({
       where: { id: usuarioId },
       select: {
