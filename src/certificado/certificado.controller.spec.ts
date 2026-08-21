@@ -1,20 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CertificadoController } from './certificado.controller';
+import { CertificadosController } from './certificado.controller';
 import { CertificadoService } from './certificado.service';
 
-describe('CertificadoController', () => {
-  let controller: CertificadoController;
+describe('CertificadosController', () => {
+  let controller: CertificadosController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CertificadoController],
+      controllers: [CertificadosController],
       providers: [CertificadoService],
     }).compile();
 
-    controller = module.get<CertificadoController>(CertificadoController);
+    controller = module.get<CertificadosController>(
+      CertificadosController,
+    );
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 });
+
