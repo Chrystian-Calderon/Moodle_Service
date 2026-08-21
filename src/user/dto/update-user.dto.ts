@@ -1,4 +1,5 @@
 import {
+    IsDateString,
     IsEmail,
     IsNotEmpty,
     IsOptional,
@@ -88,4 +89,64 @@ export class UpdateUsuarioDto {
     @IsString()
     @IsNotEmpty()
     rolId?: string;
+}
+
+
+
+export class UpdateMiPerfilDto {
+    @IsOptional()
+    @IsEmail()
+    correo?: string;
+
+    @IsOptional()
+    @IsString()
+    nombre?: string;
+
+    @IsOptional()
+    @IsString()
+    apellidoPaterno?: string;
+
+    @IsOptional()
+    @IsString()
+    apellidoMaterno?: string;
+
+    @IsOptional()
+    @IsString()
+    tipoDocumentoIdentidad?: string;
+
+    @IsOptional()
+    @IsString()
+    numeroDocumento?: string;
+
+    @IsOptional()
+    @IsDateString()
+    fechaNacimiento?: string;
+
+    @IsOptional()
+    @IsString()
+    genero?: string;
+
+    @IsOptional()
+    @IsString()
+    telefono?: string;
+
+    @IsOptional()
+    @IsString()
+    ciudad?: string;
+
+    @IsOptional()
+    @IsString()
+    pais?: string;
+
+    @IsOptional()
+    @IsString()
+    ocupacion?: string;
+
+    @IsOptional()
+    @IsString()
+    contactoEmergenciaNombre?: string;
+
+    @IsOptional()
+    @IsString()
+    contactoEmergenciaTelefono?: string;
 }
