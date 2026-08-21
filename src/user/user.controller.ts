@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUsuarioDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Permission } from 'src/common/decorator/decorator';
+import { CreateStudentDto } from './dto/create-student.dto';
 
 @Controller('user')
 export class UserController {
@@ -12,6 +13,11 @@ export class UserController {
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @Post('crear-estudiante')
+  createStudent(@Body() createStudentDto: CreateStudentDto) {
+    return this.userService.createStudent(createStudentDto);
   }
 
   @Get('search')

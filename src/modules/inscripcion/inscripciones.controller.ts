@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Put, Delete, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, Delete, Body, Query } from '@nestjs/common';
 import { InscripcionesService } from 'src/modules/inscripcion/inscripciones.service';
 import { CreateInscripcionDto } from 'src/modules/inscripcion/dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from 'src/modules/inscripcion/dto/update-inscripcion.dto';
@@ -11,6 +11,11 @@ export class InscripcionesController {
   @Get()
   findAll() {
     return this.inscripcionesService.findAll();
+  }
+
+  @Get('paginated')
+  findAllPaginated(@Query('page') page = '1', @Query('limit') limit = '10') {
+    return this.inscripcionesService.findAllPaginated(Number(page), Number(limit));
   }
 
   @Get(':id')

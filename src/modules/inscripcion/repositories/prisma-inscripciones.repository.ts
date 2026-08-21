@@ -57,6 +57,68 @@ export class PrismaInscripcionesRepository
     });
   }
 
+  // obtener inscripciones paginado
+  async findEstudianteWithInscripciones(skip: number, take: number) {
+    return this.prisma.usuario.findMany({
+      where: {
+        inscripciones: {
+          some: {}
+        },
+      },
+      skip,
+      take,
+      orderBy: {
+        id: "asc",
+      },
+      select: {
+        id: true,
+        correo: true,
+        perfil: {
+          select: {
+            nombre: true,
+            apellidoPaterno: true,
+            apellidoMaterno: true,
+          }
+        },
+        inscripciones: {
+          orderBy: {
+            modulo: {
+              orden: "asc",
+            }
+          },
+          select: {
+            id: true,
+            numeroInscripcion: true,
+            estadoAcceso: true,
+            modulo: {
+              select: {
+                id: true,
+                nombre: true,
+                orden: true,
+                curso: {
+                  select: {
+                    id: true,
+                    nombre: true,
+                    categoria: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  async countEstudiantesWithInscripciones() {
+    return this.prisma.usuario.count({
+      where: {
+        inscripciones: {
+          some: {}
+        },
+      },
+    });
+  }
+
   // metodo crear inscripcion con varios estudianteId
   async createMultiple(data: {
     moduloId: string;

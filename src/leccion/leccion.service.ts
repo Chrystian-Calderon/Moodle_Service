@@ -4,10 +4,13 @@ import { PrismaService } from "../prisma/prisma.service";
 import { CreateLeccionDto } from "./dto/create-leccion.dto";
 import { UpdateLeccionDto } from "./dto/update-leccion.dto";
 import { QueryLeccionDto } from "./dto/query-leccion.dto";
+import { ProgresoService } from "src/progreso/progreso.service";
 
 @Injectable()
 export class LeccionService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService,
+    private readonly progresoService: ProgresoService
+  ) { }
 
   async create(dto: CreateLeccionDto) {
     const modulo = await this.prisma.modulo.findUnique({ where: { id: dto.moduloId } });
@@ -336,9 +339,23 @@ export class LeccionService {
       }
     }
 
-    return this.prisma.progresoLeccion.update({
-      where: { id: progreso.id },
-      data: { estado: "completada", porcentaje: 100, completadoEn: new Date() },
-    });
+    const progresoActualizado =
+      await this.prisma.progresoLeccion.update({
+        where: {
+          id: progreso.id,
+        },
+        data: {
+          estado: "completada",
+          porcentaje: 100,
+          completadoEn: new Date(),
+          ultimoAccesoEn: new Date(),
+        },
+      });
+
+    await this.progresoService.recalcularProgresoModulo(
+      inscripcion.id,
+    );
+
+    return progresoActualizado;
   }
 }
