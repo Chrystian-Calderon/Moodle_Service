@@ -2,14 +2,28 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class CursoService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService
+  ) { }
 
-  create(createCursoDto: CreateCursoDto) {
+  async create(createCursoDto: CreateCursoDto, file?: Express.Multer.File) {
+    let rutaPortada: string | undefined;
+
+    if (file) {
+      const imagen = await this.cloudinaryService.uploadImage(file, 'lms/cursos');
+      rutaPortada = imagen.url;
+    }
+
     return this.prisma.curso.create({
-      data: createCursoDto,
+      data: {
+        ...createCursoDto,
+        rutaPortada,
+      },
     });
   }
 
@@ -174,5 +188,25 @@ export class CursoService {
     });
 
     return cursos;
+  }
+
+  // subir imagen de un curso
+  async subirImagenCurso(file: Express.Multer.File, cursoId: string) {
+    const curso = await this.findOne(cursoId);
+
+    if (!curso) {
+      throw new NotFoundException('Curso no encontrado');
+    }
+
+    // subir imagen a cloudinary
+    const imagen = await this.cloudinaryService.uploadImage(file, 'lms/cursos');
+
+    // actualizar curso con url de la imagen y publicId
+    return this.prisma.curso.update({
+      where: { id: cursoId },
+      data: {
+        rutaPortada: imagen.url,
+      },
+    });
   }
 }

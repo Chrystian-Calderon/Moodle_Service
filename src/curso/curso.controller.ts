@@ -10,6 +10,8 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 
 import { CursoService } from './curso.service';
@@ -19,14 +21,26 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permission.guard';
 import { Permission } from 'src/auth/enums/permission.enum';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('curso')
 export class CursoController {
   constructor(private readonly cursoService: CursoService) { }
 
   @Post()
-  create(@Body() createCursoDto: CreateCursoDto) {
-    return this.cursoService.create(createCursoDto);
+  @UseInterceptors(FileInterceptor('rutaPortada'))
+  create(@Body() createCursoDto: CreateCursoDto, @UploadedFile() file?: Express.Multer.File) {
+    return this.cursoService.create(createCursoDto, file);
+  }
+
+  @Post(':id/imagen')
+  @UseInterceptors(FileInterceptor('imagen'))
+  async subirImagenCurso(
+    @Param('id') cursoId: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    console.log('subirImagenCurso', cursoId, file);
+    return this.cursoService.subirImagenCurso(file, cursoId);
   }
 
   @Get()
