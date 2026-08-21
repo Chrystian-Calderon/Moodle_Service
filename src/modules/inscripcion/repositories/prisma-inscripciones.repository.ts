@@ -142,6 +142,28 @@ export class PrismaInscripcionesRepository
   async findByEstudianteId(estudianteId: string) {
     return this.prisma.inscripcion.findMany({
       where: { estudianteId },
+      include: {
+        modulo: {
+          select: {
+            id: true,
+            nombre: true,
+            orden: true,
+
+            curso: {
+              select: {
+                id: true,
+                nombre: true,
+                categoria: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        modulo: {
+          orden: 'asc',
+        }
+      }
     });
   }
 }

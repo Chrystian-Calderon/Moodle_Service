@@ -14,11 +14,28 @@ type ModuloAgrupado = {
   numeroInscripcion?: string;
 };
 
+type ModuloAgrupadoConDetalles = {
+  id: string;
+  nombre: string;
+  orden: number;
+  estado: string;
+  estadoAcceso: string;
+  porcentajeAvance: number;
+  numeroInscripcion?: string;
+};
+
 type CursoAgrupado = {
   id: string;
   nombre: string;
   categoria: string | null;
   modulos: ModuloAgrupado[];
+};
+
+type CursoAgrupadoConDetalles = {
+  id: string;
+  nombre: string;
+  categoria: string | null;
+  modulos: ModuloAgrupadoConDetalles[];
 };
 
 type EstudianteAgrupado = {
@@ -77,12 +94,16 @@ export class InscripcionesService {
   async update(id: string, data: UpdateInscripcionDto) {
     const inscripcion = await this.inscripcionesRepository.findById(id);
     if (!inscripcion) {
-      throw new NotFoundException(`Inscripcion with id ${id} not found`);
+      throw new NotFoundException(`Inscripción con id ${id} no encontrada`);
     }
     return this.inscripcionesRepository.update(id, data);
   }
 
   async delete(id: string) {
+    const inscripcion = await this.inscripcionesRepository.findById(id);
+    if (!inscripcion) {
+      throw new NotFoundException(`Inscripción con id ${id} no encontrada`);
+    }
     return this.inscripcionesRepository.delete(id);
   }
 
@@ -175,6 +196,43 @@ export class InscripcionesService {
 
   // metodo obtener inscripciones de un estudiante por estudianteId
   async findByEstudianteId(estudianteId: string) {
-    return this.inscripcionesRepository.findByEstudianteId(estudianteId);
+    const inscripciones = await this.inscripcionesRepository.findByEstudianteId(estudianteId);
+
+    const cursos = new Map<string, CursoAgrupadoConDetalles>();
+
+    for (const inscripcion of inscripciones) {
+      const cursoId = inscripcion.modulo.curso.id;
+
+      let curso = cursos.get(cursoId);
+
+      if (!curso) {
+        curso = {
+          id: cursoId,
+          nombre: inscripcion.modulo.curso.nombre,
+          categoria: inscripcion.modulo.curso.categoria,
+          modulos: [],
+        };
+
+        cursos.set(cursoId, curso);
+      }
+
+      curso.modulos.push({
+        id: inscripcion.modulo.id,
+        nombre: inscripcion.modulo.nombre,
+        orden: inscripcion.modulo.orden,
+
+        estado: inscripcion.estado,
+        estadoAcceso: inscripcion.estadoAcceso,
+        porcentajeAvance: inscripcion.porcentajeAvance,
+        numeroInscripcion: inscripcion.numeroInscripcion,
+      });
+    }
+
+    return Array.from(cursos.values()).map((curso) => ({
+      ...curso,
+      modulos: curso.modulos.sort(
+        (a, b) => a.orden - b.orden,
+      ),
+    }));
   }
 }

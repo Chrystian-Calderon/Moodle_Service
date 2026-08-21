@@ -27,6 +27,26 @@ type EstudianteConInscripciones = {
   }[];
 };
 
+type InscripcionConModuloCurso = {
+  id: string;
+  numeroInscripcion: string;
+  estado: string;
+  estadoAcceso: string;
+  porcentajeAvance: number;
+
+  modulo: {
+    id: string;
+    nombre: string;
+    orden: number;
+
+    curso: {
+      id: string;
+      nombre: string;
+      categoria: string | null;
+    };
+  };
+};
+
 export abstract class InscripcionesRepository {
   abstract findAll(): Promise<unknown[]>;
 
@@ -54,5 +74,5 @@ export abstract class InscripcionesRepository {
   }): Promise<unknown>;
 
   // metodo obtener inscripciones de un estudiante por estudianteId
-  abstract findByEstudianteId(estudianteId: string): Promise<unknown[]>;
+  abstract findByEstudianteId(estudianteId: string): Promise<InscripcionConModuloCurso[]>;
 }
