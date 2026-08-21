@@ -20,6 +20,7 @@ import { FormularioLeccionModule } from './formulario-leccion/formulario-leccion
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { CertificadoModule } from './certificado/certificado.module';
+import { ProgresoModule } from './progreso/progreso.module';
 
 
 @Module({
@@ -39,6 +40,7 @@ import { CertificadoModule } from './certificado/certificado.module';
     ProgresoCursoModule,
     FormularioLeccionModule,
     CertificadoModule,
+    ProgresoModule,
     
   ],
   controllers: [AppController],
