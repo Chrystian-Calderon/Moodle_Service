@@ -11,18 +11,37 @@ export class CursoService {
     private readonly cloudinaryService: CloudinaryService
   ) { }
 
-  async create(createCursoDto: CreateCursoDto, file?: Express.Multer.File) {
+  async create(
+    createCursoDto: CreateCursoDto,
+    portada?: Express.Multer.File,
+    secundaria?: Express.Multer.File,
+  ) {
     let rutaPortada: string | undefined;
+    let rutaImagenSecundaria: string | undefined;
 
-    if (file) {
-      const imagen = await this.cloudinaryService.uploadImage(file, 'lms/cursos');
+    if (portada) {
+      const imagen = await this.cloudinaryService.uploadImage(
+        portada,
+        'lms/cursos',
+      );
+
       rutaPortada = imagen.url;
+    }
+
+    if (secundaria) {
+      const imagen = await this.cloudinaryService.uploadImage(
+        secundaria,
+        'lms/cursos',
+      );
+
+      rutaImagenSecundaria = imagen.url;
     }
 
     return this.prisma.curso.create({
       data: {
         ...createCursoDto,
         rutaPortada,
+        rutaImagenSecundaria,
       },
     });
   }
@@ -128,12 +147,49 @@ export class CursoService {
       },
     });
   }
-  async update(id: string, updateCursoDto: UpdateCursoDto) {
+
+  async update(
+    id: string,
+    updateCursoDto: UpdateCursoDto,
+    portada?: Express.Multer.File,
+    secundaria?: Express.Multer.File,
+  ) {
     await this.findOne(id);
+
+    let rutaPortada: string | undefined;
+    let rutaImagenSecundaria: string | undefined;
+
+    if (portada) {
+      const imagen = await this.cloudinaryService.uploadImage(
+        portada,
+        'lms/cursos',
+      );
+
+      rutaPortada = imagen.url;
+    }
+
+    if (secundaria) {
+      const imagen = await this.cloudinaryService.uploadImage(
+        secundaria,
+        'lms/cursos',
+      );
+
+      rutaImagenSecundaria = imagen.url;
+    }
 
     return this.prisma.curso.update({
       where: { id },
-      data: updateCursoDto,
+      data: {
+        ...updateCursoDto,
+
+        ...(rutaPortada && {
+          rutaPortada,
+        }),
+
+        ...(rutaImagenSecundaria && {
+          rutaImagenSecundaria,
+        }),
+      },
     });
   }
 

@@ -5,9 +5,11 @@ import { RecursoLeccionService } from "src/recursos-leccion/recursos-leccion.ser
 import { RecursoLeccionController } from "src/recursos-leccion/recursos-leccion.controller";
 import { RecursoLeccionItemController } from "src/recursos-leccion/recurso-leccion-item.controller";
 import { ProgresoModule } from "src/progreso/progreso.module";
+import { CloudinaryModule } from "src/cloudinary/cloudinary.module";
+import { RecursosLeccionModule } from "src/recursos-leccion/recursos-leccion.module";
 
 @Module({
-  imports: [ProgresoModule],
+  imports: [CloudinaryModule, RecursosLeccionModule, ProgresoModule],
   controllers: [LeccionController, RecursoLeccionController, RecursoLeccionItemController],
   providers: [LeccionService, RecursoLeccionService],
 })
