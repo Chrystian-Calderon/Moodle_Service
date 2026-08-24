@@ -1,34 +1,61 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+} from '@nestjs/common';
+
+
+import { ListarCertificadosDto } from './dto/listar-certificados.dto';
 import { CertificadoService } from './certificado.service';
-import { CreateCertificadoDto } from './dto/create-certificado.dto';
-import { UpdateCertificadoDto } from './dto/update-certificado.dto';
 
-@Controller('certificado')
-export class CertificadoController {
-  constructor(private readonly certificadoService: CertificadoService) {}
+@Controller('certificados')
+export class CertificadosController {
+  constructor(
+    private readonly certificadoService: CertificadoService,
+  ) {}
 
-  @Post()
-  create(@Body() createCertificadoDto: CreateCertificadoDto) {
-    return this.certificadoService.create(createCertificadoDto);
-  }
+// ===================================================================
+// 1. LISTAR CERTIFICADOS
+// ===================================================================
 
-  @Get()
-  findAll() {
-    return this.certificadoService.findAll();
-  }
+@Get()
+findAll(
+  @Query() query: ListarCertificadosDto,
+) {
+  return this.certificadoService.findAll(query);
+}
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.certificadoService.findOne(+id);
-  }
+// ===================================================================
+// 3. BUSCAR CERTIFICADOS DE UN USUARIO
+// ===================================================================
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCertificadoDto: UpdateCertificadoDto) {
-    return this.certificadoService.update(+id, updateCertificadoDto);
-  }
+@Get('usuario/:usuarioId')
+async buscarPorUsuario(
+  @Param('usuarioId') usuarioId: string,
+) {
+  return this.certificadoService.buscarPorUsuario(usuarioId);
+}
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.certificadoService.remove(+id);
-  }
+// ===================================================================
+// 4. BUSCAR CERTIFICADO POR CÓDIGO
+// ===================================================================
+
+@Get('codigo/:codigo')
+async buscarPorCodigo(
+  @Param('codigo') codigo: string,
+) {
+  return this.certificadoService.buscarPorCodigo(codigo);
+}
+
+// ===================================================================
+// 2. BUSCAR CERTIFICADO POR ID
+// ===================================================================
+
+@Get(':id')
+findOne(
+  @Param('id') id: string,
+) {
+  return this.certificadoService.findOne(id);
+}
 }
