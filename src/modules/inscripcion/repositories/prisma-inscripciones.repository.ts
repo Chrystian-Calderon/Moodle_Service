@@ -99,7 +99,11 @@ export class PrismaInscripcionesRepository
                   select: {
                     id: true,
                     nombre: true,
-                    categoria: true,
+                    categoria: {
+                      select: {
+                        nombre: true,
+                      }
+                    },
                   }
                 }
               }
@@ -153,7 +157,11 @@ export class PrismaInscripcionesRepository
               select: {
                 id: true,
                 nombre: true,
-                categoria: true,
+                categoria: {
+                  select: {
+                    nombre: true,
+                  }
+                }
               }
             }
           }
