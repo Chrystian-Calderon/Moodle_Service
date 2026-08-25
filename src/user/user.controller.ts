@@ -19,7 +19,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Permission } from 'src/common/decorator/decorator';
 import { CreateStudentDto } from './dto/create-student.dto';
-import { CambiarMiPasswordDto } from './dto/change-password';
+import { CambiarMiPasswordDto, ChangePasswordUserDto } from './dto/change-password';
 import type { AuthenticatedRequest } from 'src/common/types/authenticated-user';
 
 @Controller('user')
@@ -95,6 +95,15 @@ export class UserController {
       req.user.id,
       dto,
     );
+  }
+
+  @Patch('password/:id')
+  @UseGuards(JwtAuthGuard)
+  async changePasswordUser(
+    @Param('id') id: string,
+    @Body() dto: ChangePasswordUserDto,
+  ) {
+    return await this.userService.changePasswordUser(id, dto);
   }
 
   @Patch(':id')

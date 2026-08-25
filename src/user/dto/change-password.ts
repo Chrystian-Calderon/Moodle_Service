@@ -8,3 +8,9 @@ export class CambiarMiPasswordDto {
     @IsString()
     passwordNueva!: string;
 }
+
+export class ChangePasswordUserDto {
+    @IsString()
+    @IsNotEmpty()
+    password!: string;
+}

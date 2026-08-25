@@ -4,7 +4,7 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateMiPerfilDto, UpdateUsuarioDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { CambiarMiPasswordDto } from './dto/change-password';
+import { CambiarMiPasswordDto, ChangePasswordUserDto } from './dto/change-password';
 
 @Injectable()
 export class UserService {
@@ -683,6 +683,25 @@ export class UserService {
     return { mensaje: 'Contraseña actualizada correctamente' };
   }
 
+  async changePasswordUser(id: string, dto: ChangePasswordUserDto) {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id },
+      select: { id: true, username: true },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    const nuevoHash = await this.hashPassword(dto.password);
+
+    await this.prisma.usuario.update({
+      where: { id },
+      data: { contrasenaHash: nuevoHash },
+    });
+
+    return { mensaje: 'Contraseña actualizada correctamente ' + usuario.username };
+  }
 }
 
 
