@@ -141,10 +141,27 @@ model Notificaciones {
   @@map("notificaciones")
 }
 
+model Categoria {
+  id               String  @id @default(cuid())
+  nombre           String
+  slug             String  @unique
+  categoriaPadreId String?
+
+  categoriaPadre Categoria?  @relation("CategoriaJerarquia", fields: [categoriaPadreId], references: [id])
+  subcategorias  Categoria[] @relation("CategoriaJerarquia")
+
+  cursos        Curso[]
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@index([categoriaPadreId])
+  @@map("categorias")
+}
+
 model Curso {
   id                   String                   @id @default(cuid())
   nombre               String
-  categoria            String?
+  categoriaId          String
   slug                 String                   @unique
   descripcionCorta     String?
   descripcionCompleta  String?
@@ -159,7 +176,9 @@ model Curso {
   modulos              Modulo[]
   progresosCursos      ProgresoCurso[]
   reglaCertificacion   ReglaCertificacionCurso?
+  categoria            Categoria                @relation(fields: [categoriaId], references: [id])
 
+  @@index([categoriaId])
   @@map("cursos")
 }
 

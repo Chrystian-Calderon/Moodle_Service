@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import 'dotenv/config'; // Asegura la lectura del .env
+import { seedUsuarios } from './seeds/seed-users';
 import { seedEstudiantes } from './seeds/seed-estudiantes';
 import { seedCursos } from './seeds/seed-cursos';
 import { seedModulos } from './seeds/seed-modulos';
@@ -18,13 +19,14 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    // await seedEstudiantes(prisma);
-    // await seedCursos(prisma);
-    // await seedModulos(prisma);
-    // await seedLecciones(prisma);
-    // await seedRecursosLecciones(prisma);
-    // await seedFormularioLecciones(prisma);
-    // await seedInscripciones(prisma);
+    await seedUsuarios(prisma);
+    await seedEstudiantes(prisma);
+    await seedCursos(prisma);
+    await seedModulos(prisma);
+    await seedLecciones(prisma);
+    await seedRecursosLecciones(prisma);
+    await seedFormularioLecciones(prisma);
+    await seedInscripciones(prisma);
     await seedProgresoLecciones(prisma);
     await seedProgresoModulos(prisma);
 }

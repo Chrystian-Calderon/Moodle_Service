@@ -50,16 +50,6 @@ export class CursoController {
     );
   }
 
-  @Post(':id/imagen')
-  @UseInterceptors(FileInterceptor('imagen'))
-  async subirImagenCurso(
-    @Param('id') cursoId: string,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    console.log('subirImagenCurso', cursoId, file);
-    return this.cursoService.subirImagenCurso(file, cursoId);
-  }
-
   @Get()
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe)
@@ -97,6 +87,15 @@ export class CursoController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.cursoService.findOne(id);
+  }
+
+  @Patch(':id/imagen')
+  @UseInterceptors(FileInterceptor('imagen'))
+  async subirImagenCurso(
+    @Param('id') cursoId: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    return this.cursoService.subirImagenCurso(file, cursoId);
   }
 
   @Patch(':id')
