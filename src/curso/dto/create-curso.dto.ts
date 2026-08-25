@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsOptional,
@@ -25,17 +26,10 @@ export class CreateCursoDto {
   descripcionCompleta?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   duracionHoras?: number;
-
-  @IsOptional()
-  @IsString()
-  rutaPortada?: string;
-
-  @IsOptional()
-  @IsString()
-  rutaImagenSecundaria?: string;
 
   @IsOptional()
   @IsString()

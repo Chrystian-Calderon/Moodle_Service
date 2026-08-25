@@ -141,10 +141,10 @@ export class ProgresoService {
 
     return this.recalcularProgresoModulo(inscripcion.id);
   }
+
   async obtenerPorInscripcion(inscripcionId: string,) {
     return this.recalcularProgresoModulo(inscripcionId);
   }
-
 
   async obtenerPorUsuario(
     estudianteId: string,
