@@ -63,7 +63,6 @@ export async function seedEstudiantes(prisma: PrismaClient) {
     where: { nombre: 'ESTUDIANTE' },
     update: {},
     create: {
-      id: 'rol-est-id',
       nombre: 'ESTUDIANTE',
       descripcion: 'Acceso a clases, tareas y perfil personal',
       estado: 'activo',
