@@ -51,7 +51,11 @@ export class ModuloService {
       ...(cursoId && { cursoId }),
       ...(estaPublicado !== undefined && { estaPublicado }),
       ...(categoria && {
-        curso: { categoria: { contains: categoria, mode: 'insensitive' } },
+        curso: {
+          categoria: {
+            nombre: { contains: categoria, mode: 'insensitive' },
+          }
+        },
       }),
     };
 
@@ -62,7 +66,7 @@ export class ModuloService {
         take: limit,
         orderBy: { orden: 'asc' },
         include: {
-          curso: { select: { id: true, nombre: true, categoria: true } },
+          curso: { select: { id: true, nombre: true, categoria: { select: { nombre: true } } } },
         },
       }),
       this.prisma.modulo.count({ where }),

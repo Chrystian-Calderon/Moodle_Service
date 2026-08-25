@@ -21,7 +21,9 @@ type EstudianteConInscripciones = {
       curso: {
         id: string;
         nombre: string;
-        categoria: string | null;
+        categoria: {
+          nombre: string;
+        };
       };
     };
   }[];
@@ -42,7 +44,9 @@ type InscripcionConModuloCurso = {
     curso: {
       id: string;
       nombre: string;
-      categoria: string | null;
+      categoria: {
+        nombre: string;
+      };
     };
   };
 };
