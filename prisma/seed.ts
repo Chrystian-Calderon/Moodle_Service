@@ -12,6 +12,7 @@ import { seedFormularioLecciones } from './seeds/seed-formulario-leccion';
 import { seedInscripciones } from './seeds/seed-inscripciones';
 import { seedProgresoLecciones } from './seeds/seed-progreso-lecciones';
 import { seedProgresoModulos } from './seeds/seed-progreso-modulos';
+import { seedPermisos } from './seeds/seed-permisos';
 
 // Configurar el cliente de Prisma 7 con el Driver Adapter para el script externo
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -19,16 +20,17 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    await seedUsuarios(prisma);
-    await seedEstudiantes(prisma);
-    await seedCursos(prisma);
-    await seedModulos(prisma);
-    await seedLecciones(prisma);
-    await seedRecursosLecciones(prisma);
-    await seedFormularioLecciones(prisma);
-    await seedInscripciones(prisma);
-    await seedProgresoLecciones(prisma);
-    await seedProgresoModulos(prisma);
+    // await seedUsuarios(prisma);
+    // await seedEstudiantes(prisma);
+    // await seedPermisos(prisma);
+    // await seedCursos(prisma);
+    // await seedModulos(prisma);
+    // await seedLecciones(prisma);
+    // await seedRecursosLecciones(prisma);
+    // await seedFormularioLecciones(prisma);
+    // await seedInscripciones(prisma);
+    // await seedProgresoLecciones(prisma);
+    // await seedProgresoModulos(prisma);
 }
 
 main()

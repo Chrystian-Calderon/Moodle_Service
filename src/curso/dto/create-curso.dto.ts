@@ -10,9 +10,8 @@ export class CreateCursoDto {
   @IsString()
   nombre!: string;
 
-  @IsOptional()
   @IsString()
-  categoria?: string;
+  categoriaId!: string;
 
   @IsString()
   slug!: string;

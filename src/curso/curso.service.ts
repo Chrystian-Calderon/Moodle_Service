@@ -50,7 +50,7 @@ export class CursoService {
     page: number = 1,
     limit: number = 10,
     search?: string,
-    categoria?: string,
+    categoriaId?: string,
   ) {
     const pagina = Math.max(page, 1);
     const limite = Math.min(Math.max(limit, 1), 50);
@@ -85,12 +85,9 @@ export class CursoService {
         }
         : {}),
 
-      ...(categoria
+      ...(categoriaId
         ? {
-          categoria: {
-            equals: categoria,
-            mode: 'insensitive' as const,
-          },
+          categoriaId,
         }
         : {}),
     };
@@ -205,27 +202,19 @@ export class CursoService {
   }
 
   async findCategorias() {
-    const cursos = await this.prisma.curso.findMany({
+    return await this.prisma.categoria.findMany({
       where: {
-        categoria: {
-          not: null,
-        },
+        categoriaPadreId: null,
       },
       select: {
-        categoria: true,
+        id: true,
+        nombre: true,
+        slug: true,
       },
-      distinct: ["categoria"],
       orderBy: {
-        categoria: "asc",
+        nombre: "asc",
       },
     });
-
-    return cursos
-      .map((curso) => curso.categoria)
-      .filter(
-        (categoria): categoria is string =>
-          Boolean(categoria)
-      );
   }
 
   // obtener todos los cursos sin paginación ni filtros con modulos (id, nombre)
