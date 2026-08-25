@@ -344,17 +344,27 @@ model Certificado {
   inscripcionId      String?  @unique
   cursoId            String?
   plantillaId        String
+
   codigoVerificacion String   @unique
   numeroCertificado  String   @unique
   titulo             String
+
   fechaEmision       DateTime @default(now())
+
   rutaPdf            String?
   urlVerificacion    String?
   hashVerificacion   String?
+
   estado             String   @default("emitido")
+  intentos             Int      @default(0)
   emitidoPor         String?
+
   anuladoEn          DateTime?
   motivoAnulacion    String?
+
+  
+  
+
   creadoEn           DateTime @default(now())
   actualizadoEn      DateTime @updatedAt
 
