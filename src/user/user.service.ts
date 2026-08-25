@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateUsuarioDto } from './dto/update-user.dto';
+import { UpdateMiPerfilDto, UpdateUsuarioDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { CambiarMiPasswordDto, ChangePasswordUserDto } from './dto/change-password';
 
 @Injectable()
 export class UserService {
@@ -535,4 +536,172 @@ export class UserService {
 
     return estudiantes;
   }
+
+  async obtenerMiPerfil(usuarioId: string) {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: {
+        id: true,
+        username: true,
+        correo: true,
+        estado: true,
+        correoVerificadoEn: true,
+        ultimoAccesoEn: true,
+        createdAt: true,
+        perfil: true,
+        roles: {
+          select: {
+            rol: {
+              select: { id: true, nombre: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    return usuario;
+  }
+
+  async actualizarMiPerfil(usuarioId: string, data: UpdateMiPerfilDto) {
+    if (data.correo) {
+      const correoEnUso = await this.prisma.usuario.findFirst({
+        where: { correo: data.correo, NOT: { id: usuarioId } },
+        select: { id: true },
+      });
+
+      if (correoEnUso) {
+        throw new ConflictException('Ese correo ya está en uso por otra cuenta');
+      }
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      if (data.correo !== undefined) {
+        await tx.usuario.update({
+          where: { id: usuarioId },
+          data: { correo: data.correo },
+        });
+      }
+
+      const fechaNacimiento = data.fechaNacimiento
+        ? new Date(data.fechaNacimiento)
+        : undefined;
+
+      const fechaNacimientoValida =
+        fechaNacimiento && !Number.isNaN(fechaNacimiento.getTime())
+          ? fechaNacimiento
+          : undefined;
+
+      await tx.perfil.upsert({
+        where: { usuarioId },
+        update: {
+          ...(data.nombre !== undefined && { nombre: data.nombre }),
+          ...(data.apellidoPaterno !== undefined && {
+            apellidoPaterno: data.apellidoPaterno,
+          }),
+          ...(data.apellidoMaterno !== undefined && {
+            apellidoMaterno: data.apellidoMaterno,
+          }),
+          ...(data.tipoDocumentoIdentidad !== undefined && {
+            tipoDocumentoIdentidad: data.tipoDocumentoIdentidad,
+          }),
+          ...(data.numeroDocumento !== undefined && {
+            numeroDocumento: data.numeroDocumento,
+          }),
+          ...(data.telefono !== undefined && { telefono: data.telefono }),
+          ...(fechaNacimientoValida !== undefined && {
+            fechaNacimiento: fechaNacimientoValida,
+          }),
+          ...(data.genero !== undefined && { genero: data.genero }),
+          ...(data.ciudad !== undefined && { ciudad: data.ciudad }),
+          ...(data.pais !== undefined && { pais: data.pais }),
+          ...(data.ocupacion !== undefined && { ocupacion: data.ocupacion }),
+          ...(data.contactoEmergenciaNombre !== undefined && {
+            contactoEmergenciaNombre: data.contactoEmergenciaNombre,
+          }),
+          ...(data.contactoEmergenciaTelefono !== undefined && {
+            contactoEmergenciaTelefono: data.contactoEmergenciaTelefono,
+          }),
+        },
+        create: {
+          usuarioId,
+          nombre: data.nombre ?? '',
+          apellidoPaterno: data.apellidoPaterno,
+          apellidoMaterno: data.apellidoMaterno,
+          tipoDocumentoIdentidad: data.tipoDocumentoIdentidad,
+          numeroDocumento: data.numeroDocumento,
+          telefono: data.telefono,
+          fechaNacimiento: fechaNacimientoValida,
+          genero: data.genero,
+          ciudad: data.ciudad,
+          pais: data.pais,
+          ocupacion: data.ocupacion,
+          contactoEmergenciaNombre: data.contactoEmergenciaNombre,
+          contactoEmergenciaTelefono: data.contactoEmergenciaTelefono,
+        },
+      });
+
+      return tx.usuario.findUnique({
+        where: { id: usuarioId },
+        select: {
+          id: true,
+          username: true,
+          correo: true,
+          estado: true,
+          perfil: true,
+        },
+      });
+    });
+  }
+
+  async cambiarMiPassword(usuarioId: string, dto: CambiarMiPasswordDto) {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: { id: true, contrasenaHash: true },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    const coincide = await bcrypt.compare(dto.passwordActual, usuario.contrasenaHash);
+
+    if (!coincide) {
+      throw new UnauthorizedException('La contraseña actual no es correcta');
+    }
+
+    const nuevoHash = await this.hashPassword(dto.passwordNueva);
+
+    await this.prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { contrasenaHash: nuevoHash },
+    });
+
+    return { mensaje: 'Contraseña actualizada correctamente' };
+  }
+
+  async changePasswordUser(id: string, dto: ChangePasswordUserDto) {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id },
+      select: { id: true, username: true },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    const nuevoHash = await this.hashPassword(dto.password);
+
+    await this.prisma.usuario.update({
+      where: { id },
+      data: { contrasenaHash: nuevoHash },
+    });
+
+    return { mensaje: 'Contraseña actualizada correctamente ' + usuario.username };
+  }
 }
+
+

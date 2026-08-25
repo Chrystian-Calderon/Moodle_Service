@@ -737,6 +737,14 @@ import * as bcrypt from "bcrypt";
 //     console.log("----------------------------------------------------");
 // }
 
+main()
+    .catch((e) => {
+        console.error(e);
+        process.exit(1);
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+    });*/
 // main()
 //     .catch((e) => {
 //         console.error(e);
@@ -745,4 +753,3 @@ import * as bcrypt from "bcrypt";
 //     .finally(async () => {
 //         await prisma.$disconnect();
 //     });
-*/

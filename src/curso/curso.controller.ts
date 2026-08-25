@@ -10,6 +10,9 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
 
 import { CursoService } from './curso.service';
@@ -19,14 +22,32 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permission.guard';
 import { Permission } from 'src/auth/enums/permission.enum';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('curso')
 export class CursoController {
   constructor(private readonly cursoService: CursoService) { }
 
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'rutaPortada', maxCount: 1 },
+      { name: 'rutaImagenSecundaria', maxCount: 1 },
+    ]),
+  )
   @Post()
-  create(@Body() createCursoDto: CreateCursoDto) {
-    return this.cursoService.create(createCursoDto);
+  async create(
+    @Body() createCursoDto: CreateCursoDto,
+    @UploadedFiles()
+    files: {
+      rutaPortada?: Express.Multer.File[];
+      rutaImagenSecundaria?: Express.Multer.File[];
+    },
+  ) {
+    return this.cursoService.create(
+      createCursoDto,
+      files.rutaPortada?.[0],
+      files.rutaImagenSecundaria?.[0],
+    );
   }
 
   @Get()
@@ -68,12 +89,37 @@ export class CursoController {
     return this.cursoService.findOne(id);
   }
 
+  @Patch(':id/imagen')
+  @UseInterceptors(FileInterceptor('imagen'))
+  async subirImagenCurso(
+    @Param('id') cursoId: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    return this.cursoService.subirImagenCurso(file, cursoId);
+  }
+
   @Patch(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'rutaPortada', maxCount: 1 },
+      { name: 'rutaImagenSecundaria', maxCount: 1 },
+    ]),
+  )
   update(
     @Param('id') id: string,
     @Body() updateCursoDto: UpdateCursoDto,
+    @UploadedFiles()
+    files: {
+      rutaPortada?: Express.Multer.File[];
+      rutaImagenSecundaria?: Express.Multer.File[];
+    },
   ) {
-    return this.cursoService.update(id, updateCursoDto);
+    return this.cursoService.update(
+      id,
+      updateCursoDto,
+      files.rutaPortada?.[0],
+      files.rutaImagenSecundaria?.[0],
+    );
   }
 
   @Delete(':id')
