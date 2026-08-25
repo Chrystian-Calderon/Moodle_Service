@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProgresoModuloResultado } from './type/ProgresoModuloResultado';
+import { CertificadoService } from 'src/certificado/certificado.service';
 
 @Injectable()
 export class ProgresoService {
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService,
+    private readonly certificadoService: CertificadoService
+  ) { }
 
   async recalcularProgresoModulo(inscripcionId: string) {
     const inscripcion = await this.prisma.inscripcion.findUnique({
@@ -106,6 +109,17 @@ export class ProgresoService {
           : null,
       },
     });
+
+    if (completado) {
+      await this.certificadoService.emitirCertificadoModulo(
+        inscripcion.id,
+      );
+
+      await this.certificadoService.verificarYEmitirCertificadoCurso(
+        inscripcion.estudianteId,
+        inscripcion.modulo.cursoId,
+      );
+    }
 
     return {
       id: progresoModulo.id,

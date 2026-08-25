@@ -298,17 +298,15 @@ model ProgresoCurso {
 }
 
 model PlantillaCertificado {
-  id              String        @id @default(cuid())
+  id              String   @id @default(cuid())
   nombre          String
   tipoCertificado String
-  rutaFondo       String?
-  plantillaHtml   String?
-  orientacion     String        @default("horizontal")
-  estado          String        @default("activa")
-  creadoPor       String?
-  creadoEn        DateTime      @default(now())
-  actualizadoEn   DateTime      @updatedAt
-  certificados    Certificado[]
+  rutaFondo       String
+  estado          String   @default("activa")
+  creadoEn        DateTime @default(now())
+  actualizadoEn   DateTime @updatedAt
+
+  certificados Certificado[]
 
   @@map("plantillas_certificado")
 }
