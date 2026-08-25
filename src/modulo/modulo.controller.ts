@@ -7,20 +7,27 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ModuloService } from './modulo.service';
 import { CreateModuloDto } from './dto/create-modulo.dto';
 import { UpdateModuloDto } from './dto/update-modulo.dto';
 import { QueryModuloDto } from './dto/query-modulo.dto';
 import { QueryModuloCursoDto } from './dto/query-modulo-curso.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('modulos')
 export class ModuloController {
   constructor(private readonly moduloService: ModuloService) { }
 
   @Post()
-  create(@Body() createModuloDto: CreateModuloDto) {
-    return this.moduloService.create(createModuloDto);
+  @UseInterceptors(FileInterceptor('rutaImagen'))
+  create(
+    @Body() createModuloDto: CreateModuloDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.moduloService.create(createModuloDto, file);
   }
 
   @Get()
@@ -47,8 +54,13 @@ export class ModuloController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateModuloDto: UpdateModuloDto) {
-    return this.moduloService.update(id, updateModuloDto);
+  @UseInterceptors(FileInterceptor('rutaImagen'))
+  update(
+    @Param('id') id: string,
+    @Body() updateModuloDto: UpdateModuloDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.moduloService.update(id, updateModuloDto, file);
   }
 
   @Patch(':id/restaurar')

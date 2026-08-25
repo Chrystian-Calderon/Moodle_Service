@@ -8,18 +8,11 @@ export class CloudinaryService {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET
+      api_secret: process.env.CLOUDINARY_API_SECRET,
     });
   }
 
-  // Upload an image
-  async uploadImage(
-    file: Express.Multer.File,
-    folder: string,
-  ): Promise<{
-    url: string;
-    publicId: string;
-  }> {
+  async uploadImage(file: Express.Multer.File, folder: string,): Promise<{ url: string; publicId: string; }> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -34,7 +27,40 @@ export class CloudinaryService {
 
           resolve({
             url: result.secure_url,
-            publicId: result.publicId,
+            publicId: result.public_id,
+          });
+        },
+      );
+
+      Readable.from(file.buffer).pipe(uploadStream);
+    });
+  }
+
+  async uploadFile(file: Express.Multer.File, folder: string,): Promise<{
+    url: string;
+    publicId: string;
+    resourceType: string;
+    format: string;
+  }> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: 'auto',
+          use_filename: true,
+          unique_filename: true,
+        },
+        (error, result) => {
+          if (error || !result) {
+            reject(error);
+            return;
+          }
+
+          resolve({
+            url: result.secure_url,
+            publicId: result.public_id,
+            resourceType: result.resource_type,
+            format: result.format,
           });
         },
       );

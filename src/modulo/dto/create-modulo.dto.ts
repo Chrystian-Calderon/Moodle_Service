@@ -6,6 +6,7 @@ import {
   IsInt,
   Min,
 } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateModuloDto {
   @IsString()
@@ -29,15 +30,18 @@ export class CreateModuloDto {
   rutaImagen?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   orden?: number;
 
   @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   otorgaCertificacion?: boolean;
 
   @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   estaPublicado?: boolean;
 }

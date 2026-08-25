@@ -5,13 +5,17 @@ import { CreateModuloDto } from './dto/create-modulo.dto';
 import { UpdateModuloDto } from './dto/update-modulo.dto';
 import { QueryModuloDto } from './dto/query-modulo.dto';
 import { QueryModuloCursoDto } from './dto/query-modulo-curso.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 
 @Injectable()
 export class ModuloService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService, private readonly cloudinaryService: CloudinaryService) { }
 
-  async create(createModuloDto: CreateModuloDto) {
+  async create(
+    createModuloDto: CreateModuloDto,
+    file?: Express.Multer.File,
+  ) {
     const curso = await this.prisma.curso.findUnique({
       where: { id: createModuloDto.cursoId },
     });
@@ -20,8 +24,22 @@ export class ModuloService {
       throw new NotFoundException('El curso indicado no existe');
     }
 
+    let rutaImagen: string | undefined;
+
+    if (file) {
+      const imagen = await this.cloudinaryService.uploadImage(
+        file,
+        'lms/modulos',
+      );
+
+      rutaImagen = imagen.url;
+    }
+
     return this.prisma.modulo.create({
-      data: createModuloDto,
+      data: {
+        ...createModuloDto,
+        rutaImagen,
+      },
     });
   }
 
@@ -112,12 +130,33 @@ export class ModuloService {
     });
   }
 
-  async update(id: string, updateModuloDto: UpdateModuloDto) {
+  async update(
+    id: string,
+    updateModuloDto: UpdateModuloDto,
+    file?: Express.Multer.File,
+  ) {
     await this.findOne(id);
+
+    let rutaImagen: string | undefined;
+
+    if (file) {
+      const imagen = await this.cloudinaryService.uploadImage(
+        file,
+        'lms/modulos',
+      );
+
+      rutaImagen = imagen.url;
+    }
 
     return this.prisma.modulo.update({
       where: { id },
-      data: updateModuloDto,
+      data: {
+        ...updateModuloDto,
+
+        ...(rutaImagen && {
+          rutaImagen,
+        }),
+      },
     });
   }
 
