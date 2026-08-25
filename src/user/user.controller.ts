@@ -51,7 +51,6 @@ export class UserController {
   @Get('mi-perfil')
   @UseGuards(JwtAuthGuard)
   obtenerMiPerfil(@Request() req: AuthenticatedRequest) {
-    console.log('el id: ', req.user.id);
     return this.userService.obtenerMiPerfil(req.user.id);
   }
 
