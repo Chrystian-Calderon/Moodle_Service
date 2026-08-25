@@ -27,7 +27,9 @@ type ModuloAgrupadoConDetalles = {
 type CursoAgrupado = {
   id: string;
   nombre: string;
-  categoria: string | null;
+  categoria: {
+    nombre: string;
+  };
   modulos: ModuloAgrupado[];
 };
 
@@ -209,7 +211,7 @@ export class InscripcionesService {
         curso = {
           id: cursoId,
           nombre: inscripcion.modulo.curso.nombre,
-          categoria: inscripcion.modulo.curso.categoria,
+          categoria: inscripcion.modulo.curso.categoria.nombre,
           modulos: [],
         };
 
