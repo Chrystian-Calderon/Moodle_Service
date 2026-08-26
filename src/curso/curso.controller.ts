@@ -61,14 +61,14 @@ export class CursoController {
     @Query('search')
     search?: string,
 
-    @Query('categoria')
-    categoria?: string,
+    @Query('categoriaId')
+    categoriaId?: string,
   ) {
     return this.cursoService.findAll(
       page,
       limit,
       search,
-      categoria,
+      categoriaId,
     );
   }
 
@@ -130,5 +130,10 @@ export class CursoController {
   @Get('/cat/categorias')
   findCategorias() {
     return this.cursoService.findCategorias();
+  }
+
+  @Get('/cat/subcategorias/:categoriaId')
+  findSubCategorias(@Param('categoriaId') categoriaId: string) {
+    return this.cursoService.findSubCategorias(categoriaId);
   }
 }

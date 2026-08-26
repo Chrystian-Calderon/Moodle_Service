@@ -57,6 +57,34 @@ export class CursoService {
 
     const skip = (pagina - 1) * limite;
 
+    const categoria = categoriaId
+      ? await this.prisma.categoria.findUnique({
+        where: {
+          id: categoriaId,
+        },
+        select: {
+          id: true,
+          categoriaPadreId: true,
+        },
+      })
+      : null;
+
+    let filtroCategoria = {};
+
+    if (categoria) {
+      if (categoria.categoriaPadreId === null) {
+        filtroCategoria = {
+          categoria: {
+            categoriaPadreId: categoria.id,
+          },
+        };
+      } else {
+        filtroCategoria = {
+          categoriaId: categoria.id,
+        };
+      }
+    }
+
     const where = {
       estado: 'publicado',
 
@@ -85,11 +113,7 @@ export class CursoService {
         }
         : {}),
 
-      ...(categoriaId
-        ? {
-          categoriaId,
-        }
-        : {}),
+      ...filtroCategoria,
     };
 
     const [cursos, total] = await Promise.all([
@@ -205,6 +229,22 @@ export class CursoService {
     return await this.prisma.categoria.findMany({
       where: {
         categoriaPadreId: null,
+      },
+      select: {
+        id: true,
+        nombre: true,
+        slug: true,
+      },
+      orderBy: {
+        nombre: "asc",
+      },
+    });
+  }
+
+  async findSubCategorias(categoriaId: string) {
+    return await this.prisma.categoria.findMany({
+      where: {
+        categoriaPadreId: categoriaId,
       },
       select: {
         id: true,
