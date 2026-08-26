@@ -26,6 +26,20 @@ export async function seedInscripciones(prisma: PrismaClient) {
       const numero = String(contador).padStart(4, '0');
       const numeroInscripcion = `INS-${numero}`;
 
+      // Verificar si la inscripción ya existe
+      const existente = await prisma.inscripcion.findFirst({
+        where: {
+          moduloId: modulo.id,
+          estudianteId: estudiante.id,
+        },
+        select: { id: true },
+      });
+
+      if (existente) {
+        console.log(`  ⏭️  ${numeroInscripcion} - ${estudiante.username} → ${modulo.nombre} (ya existe)`);
+        continue;
+      }
+
       await prisma.inscripcion.create({
         data: {
           moduloId: modulo.id,

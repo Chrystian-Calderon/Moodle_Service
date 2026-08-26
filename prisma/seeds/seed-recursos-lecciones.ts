@@ -23,6 +23,18 @@ export async function seedRecursosLecciones(prisma: PrismaClient) {
       .replace(/-+/g, '-')
       .trim();
 
+    // Verificar si ya existen recursos para esta lección
+    const recursosExistentes = await prisma.recursosLeccion.count({
+      where: { leccionId: leccion.id },
+    });
+
+    if (recursosExistentes >= 2) {
+      contador++;
+      const numero = String(contador).padStart(3, '0');
+      console.log(`  ⏭️  ${numero}/${lecciones.length} - ${leccion.nombre} [${leccion.modulo.nombre}] (ya existen ${recursosExistentes} recursos)`);
+      continue;
+    }
+
     // PDF del recurso
     await prisma.recursosLeccion.create({
       data: {
