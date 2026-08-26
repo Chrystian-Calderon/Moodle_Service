@@ -331,30 +331,30 @@ model PlantillaCertificado {
 }
 
 model Certificado {
-  id                 String               @id @default(cuid())
+  id                 String                @id @default(cuid())
   tipo               String
   usuarioId          String
-  inscripcionId      String?              @unique
+  inscripcionId      String?               @unique
   cursoId            String?
-  plantillaId        String
-  codigoVerificacion String               @unique
-  numeroCertificado  String               @unique
+  plantillaId        String?
+  codigoVerificacion String                @unique
+  numeroCertificado  String                @unique
   titulo             String
-  fechaEmision       DateTime             @default(now())
+  fechaEmision       DateTime              @default(now())
   rutaPdf            String?
   urlVerificacion    String?
   hashVerificacion   String?
-  estado             String               @default("emitido")
-  intentos           Int                  @default(0)
+  estado             String                @default("emitido")
+  intentos           Int                   @default(0)
   emitidoPor         String?
   anuladoEn          DateTime?
   motivoAnulacion    String?
-  creadoEn           DateTime             @default(now())
-  actualizadoEn      DateTime             @updatedAt
-  curso              Curso?               @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-  inscripcion        Inscripcion?         @relation(fields: [inscripcionId], references: [id], onDelete: Cascade)
-  plantilla          PlantillaCertificado @relation(fields: [plantillaId], references: [id])
-  usuario            Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  creadoEn           DateTime              @default(now())
+  actualizadoEn      DateTime              @updatedAt
+  curso              Curso?                @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  inscripcion        Inscripcion?          @relation(fields: [inscripcionId], references: [id], onDelete: Cascade)
+  plantilla          PlantillaCertificado? @relation(fields: [plantillaId], references: [id])
+  usuario            Usuario               @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, cursoId])
   @@map("certificados")

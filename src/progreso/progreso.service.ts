@@ -224,4 +224,6 @@ export class ProgresoService {
       estudiantesInscritos,
     };
   }
+
+
 }

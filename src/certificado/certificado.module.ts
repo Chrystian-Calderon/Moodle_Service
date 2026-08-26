@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 import { CertificadosController } from './certificado.controller';
 import { CertificadoService } from './certificado.service';
+import { CertificadoPdfService } from './certificado-pdf.service';
 
 @Module({
   imports: [
@@ -12,10 +13,10 @@ import { CertificadoService } from './certificado.service';
     CertificadosController,
   ],
   providers: [
-    CertificadoService,
+    CertificadoService, CertificadoPdfService
   ],
   exports: [
     CertificadoService,
   ],
 })
-export class CertificadosModule {}
+export class CertificadosModule { }
