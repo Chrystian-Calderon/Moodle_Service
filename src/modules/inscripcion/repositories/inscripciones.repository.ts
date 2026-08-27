@@ -1,6 +1,21 @@
+type Inscripcion = {
+  id: string;
+  moduloId: string;
+  estudianteId: string;
+  numeroInscripcion: string;
+  fechaInscripcion: Date;
+  estado: string;
+  estadoAcceso: string;
+  porcentajeAvance: number;
+  fechaFinalizacion: Date | null;
+  observaciones: string | null;
+  inscritoPor: string | null;
+}
+
 type EstudianteConInscripciones = {
   id: string;
   correo: string;
+  estado: string;
 
   perfil: {
     nombre: string | null;
@@ -31,10 +46,16 @@ type EstudianteConInscripciones = {
 
 type InscripcionConModuloCurso = {
   id: string;
+  moduloId: string;
+  estudianteId: string;
   numeroInscripcion: string;
+  fechaInscripcion: Date;
+  fechaFinalizacion: Date | null;
   estado: string;
   estadoAcceso: string;
   porcentajeAvance: number;
+  observaciones: string | null;
+  inscritoPor: string | null;
 
   modulo: {
     id: string;
@@ -54,7 +75,9 @@ type InscripcionConModuloCurso = {
 export abstract class InscripcionesRepository {
   abstract findAll(): Promise<unknown[]>;
 
-  abstract findById(id: string): Promise<unknown | null>;
+  abstract findById(id: string): Promise<Inscripcion | null>;
+
+  abstract findByIdWithCurso(id: string): Promise<InscripcionConModuloCurso | null>;
 
   abstract create(data: {
     moduloId: string;
@@ -67,8 +90,10 @@ export abstract class InscripcionesRepository {
   abstract delete(id: string): Promise<void>;
 
   // metodo obtener inscripciones paginado
-  abstract findEstudianteWithInscripciones(skip: number, take: number): Promise<EstudianteConInscripciones[]>;
-  abstract countEstudiantesWithInscripciones(): Promise<number>;
+  abstract findEstudianteWithInscripciones(skip: number, take: number, search?: string): Promise<EstudianteConInscripciones[]>;
+  abstract countEstudiantesWithInscripciones(search?: string): Promise<number>;
+
+  abstract findByEstudianteId(estudianteId: string): Promise<Inscripcion[]>;
 
   // metodo crear inscripcion con varios estudianteId
   abstract createMultiple(data: {
@@ -78,5 +103,5 @@ export abstract class InscripcionesRepository {
   }): Promise<unknown>;
 
   // metodo obtener inscripciones de un estudiante por estudianteId
-  abstract findByEstudianteId(estudianteId: string): Promise<InscripcionConModuloCurso[]>;
+  abstract findByEstudianteInscripciones(estudianteId: string): Promise<InscripcionConModuloCurso[]>;
 }
