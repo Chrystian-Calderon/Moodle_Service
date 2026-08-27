@@ -133,7 +133,7 @@ model Notificaciones {
   titulo    String
   contenido String
   urlAccion String?
-  datosJson Json?
+  estado    String    @default("pendiente")
   leidaEn   DateTime?
   creadoEn  DateTime  @default(now())
   usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
