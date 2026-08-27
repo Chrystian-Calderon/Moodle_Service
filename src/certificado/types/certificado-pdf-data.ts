@@ -25,3 +25,6 @@ export interface CertificadoCursoPdfData {
     resumen: string;
     cargaHoraria: string;
 }
+
+
+

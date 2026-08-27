@@ -111,14 +111,19 @@ export class ProgresoService {
     });
 
     if (completado) {
-      await this.certificadoService.emitirCertificadoModulo(
-        inscripcion.id,
-      );
+      await this.certificadoService.emitirCertificadoModulo(inscripcion.id);
 
-      await this.certificadoService.verificarYEmitirCertificadoCurso(
+      const cursoCompleto = await this.verificarCursoCompleto(
         inscripcion.estudianteId,
         inscripcion.modulo.cursoId,
       );
+
+      if (cursoCompleto) {
+        await this.certificadoService.verificarYEmitirCertificadoCurso(
+          inscripcion.estudianteId,
+          inscripcion.modulo.cursoId,
+        );
+      }
     }
 
     return {
@@ -225,5 +230,31 @@ export class ProgresoService {
     };
   }
 
+  private async verificarCursoCompleto(estudianteId: string, cursoId: string): Promise<boolean> {
+    const modulosTotales = await this.prisma.modulo.count({
+      where: { cursoId, estaPublicado: true },
+    });
 
+    if (modulosTotales === 0) return false;
+
+    const modulosCompletados = await this.prisma.inscripcion.count({
+      where: {
+        estudianteId,
+        modulo: { cursoId, estaPublicado: true },
+        progresoModulo: { estado: 'completado' },
+      },
+    });
+
+    const regla = await this.prisma.reglaCertificacionCurso.findUnique({ where: { cursoId } });
+    const porcentajeRequerido = regla?.porcentajeModulosRequerido ?? 100;
+    const porcentajeActual = (modulosCompletados / modulosTotales) * 100;
+
+    await this.prisma.progresoCurso.upsert({
+      where: { cursoId_estudianteId: { cursoId, estudianteId } },
+      update: { modulosTotales, modulosCompletados, porcentaje: porcentajeActual },
+      create: { cursoId, estudianteId, modulosTotales, modulosCompletados, porcentaje: porcentajeActual },
+    });
+
+    return porcentajeActual >= porcentajeRequerido;
+  }
 }

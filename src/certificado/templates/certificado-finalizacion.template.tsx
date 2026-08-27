@@ -83,10 +83,10 @@ const styles = StyleSheet.create({
     },
 
     codigo: {
-        position: 'absolute',
-        top: '15%',
-        left: '12.1%',
-        fontFamily: 'Helvetica-Oblique',
+        position: "absolute",
+        top: "15%",
+        left: "12.1%",
+        fontFamily: "Helvetica-Oblique",
         fontSize: 15,
         color: COLORS.muted,
         letterSpacing: 0.5,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 
     nombre: {
         position: 'absolute',
-        top: '53.7%',
+        top: '54%',
         left: '5%',
         width: '90%',
         textAlign: 'center',
@@ -193,8 +193,9 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         right: '10%',
-        bottom: '8%',
+        top: '12%',
     },
+
 });
 
 export function CertificadoCursoTemplate({
@@ -258,20 +259,17 @@ export function CertificadoCursoTemplate({
                 </Text>
 
                 <Text style={styles.contenido}>
-                    <Text style={styles.resumenTitulo}>
-                        Resumen del curso
-                    </Text>
 
                     {'\n'}
 
                     <Text style={styles.resumen}>
-                        {data.titulo}
+                        {data.resumen}
                     </Text>
 
                     {'\n\n'}
 
                     <Text style={styles.cargaHoraria}>
-                        Carga horaria: {data.cargaHoraria ?? '20 horas'}
+                       Carga horaria: {data.cargaHoraria ?? '20'} horas
                     </Text>
 
                     {'\n'}

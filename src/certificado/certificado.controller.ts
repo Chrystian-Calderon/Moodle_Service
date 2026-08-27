@@ -6,24 +6,36 @@ import {
   Query,
   Body,
   Res,
-  StreamableFile
+  StreamableFile,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ListarCertificadosDto } from './dto/listar-certificados.dto';
 import { AnularCertificadoDto } from './dto/anular-certificado.dto';
 import { CertificadoService } from './certificado.service';
 import type { Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import type { AuthenticatedRequest } from 'src/common/types/authenticated-user';
 
 @Controller('certificados')
 export class CertificadosController {
-  constructor(
-    private readonly certificadoService: CertificadoService,
-  ) { }
+  constructor(private readonly certificadoService: CertificadoService) { }
+
+  // ---- Rutas fijas / con prefijo (van SIEMPRE antes que ':id') ----
 
   @Get()
   findAll(@Query() query: ListarCertificadosDto) {
     return this.certificadoService.findAll(query);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('mis-certificados')
+  async misCertificados(
+    @Request() req: AuthenticatedRequest,
+    @Query('buscar') buscar?: string,
+  ) {
+    return this.certificadoService.obtenerCertificadosPorUsuario(req.user.id, buscar);
+  }
 
   @Get('usuario/:usuarioId')
   async buscarPorUsuario(@Param('usuarioId') usuarioId: string) {
@@ -46,7 +58,10 @@ export class CertificadosController {
   }
 
   @Patch(':id/anular')
-  async anularCertificado(@Param('id') id: string, @Body() dto: AnularCertificadoDto) {
+  async anularCertificado(
+    @Param('id') id: string,
+    @Body() dto: AnularCertificadoDto,
+  ) {
     return this.certificadoService.anularCertificado(id, dto.motivoAnulacion);
   }
 
@@ -59,7 +74,7 @@ export class CertificadosController {
   async descargarCertificado(
     @Param('id') id: string,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<StreamableFile> {
     const { buffer, filename } = await this.certificadoService.descargarCertificado(id);
 
     res.set({
@@ -75,5 +90,4 @@ export class CertificadosController {
   findOne(@Param('id') id: string) {
     return this.certificadoService.findOne(id);
   }
-
 }
