@@ -6,6 +6,20 @@ import { CreateInscripcionEstudiantesDto } from './dto/create-inscripcion-estudi
 import { ModuloService } from 'src/modulo/modulo.service';
 import { UserService } from 'src/user/user.service';
 
+type Inscripcion = {
+  id: string;
+  moduloId: string;
+  estudianteId: string;
+  numeroInscripcion: string;
+  fechaInscripcion: Date;
+  estado: string;
+  estadoAcceso: string;
+  porcentajeAvance: number;
+  fechaFinalizacion: Date | null;
+  observaciones: string | null;
+  inscritoPor: string | null;
+}
+
 type ModuloAgrupado = {
   id: string;
   nombre: string;
@@ -18,10 +32,7 @@ type ModuloAgrupadoConDetalles = {
   id: string;
   nombre: string;
   orden: number;
-  estado: string;
-  estadoAcceso: string;
-  porcentajeAvance: number;
-  numeroInscripcion?: string;
+  inscripcion: Inscripcion;
 };
 
 type CursoAgrupado = {
@@ -36,7 +47,9 @@ type CursoAgrupado = {
 type CursoAgrupadoConDetalles = {
   id: string;
   nombre: string;
-  categoria: string | null;
+  categoria: {
+    nombre: string;
+  };
   modulos: ModuloAgrupadoConDetalles[];
 };
 
@@ -80,7 +93,7 @@ export class InscripcionesService {
 
     // buscar si el estudiante ya está inscrito en el módulo
     const inscripcionesExistentes = await this.inscripcionesRepository.findByEstudianteId(data.estudianteId);
-    const yaInscrito = inscripcionesExistentes.some((inscripcion: any) => inscripcion.moduloId === data.moduloId);
+    const yaInscrito = inscripcionesExistentes.some((inscripcion: Inscripcion) => inscripcion.moduloId === data.moduloId);
 
     if (yaInscrito) {
       throw new NotFoundException('El estudiante ya está inscrito en este módulo');
@@ -109,11 +122,57 @@ export class InscripcionesService {
     return this.inscripcionesRepository.delete(id);
   }
 
-  async findAllPaginated(page: number, limit: number) {
+  // eliminar todo el curso con sus modulos inscritos del estudiante
+  async eliminarCursoInscripciones(idEstudiante: string, idCurso: string) {
+    const inscripciones = await this.inscripcionesRepository.findByEstudianteInscripciones(idEstudiante);
+    const inscripcionesCurso = inscripciones.filter(inscripcion => inscripcion.modulo.curso.id === idCurso);
+
+    if (inscripcionesCurso.length === 0) {
+      throw new NotFoundException(`No se encontraron inscripciones para el estudiante con id ${idEstudiante} en el curso con id ${idCurso}`);
+    }
+
+    for (const inscripcion of inscripcionesCurso) {
+      await this.inscripcionesRepository.delete(inscripcion.id);
+    }
+
+    return { message: `Se eliminaron ${inscripcionesCurso.length} inscripciones del estudiante con id ${idEstudiante} en el curso con id ${idCurso}` };
+  }
+
+  async eliminarModuloInscripciones(id: string, idCurso: string, idModulo: string) {
+    const inscripcion = await this.inscripcionesRepository.findByIdWithCurso(id);
+
+    if (!inscripcion) {
+      throw new NotFoundException(`Inscripción con id ${id} no encontrada`);
+    }
+
+    if (inscripcion.modulo.curso.id !== idCurso || inscripcion.modulo.id !== idModulo) {
+      throw new NotFoundException(`La inscripción con id ${id} no pertenece al curso con id ${idCurso} y módulo con id ${idModulo}`);
+    }
+
+    await this.inscripcionesRepository.delete(id);
+
+    return { message: `Se eliminó la inscripción con id ${id} del estudiante en el curso con id ${idCurso} y módulo con id ${idModulo}` };
+  }
+
+  async eliminarTodasInscripciones(idEstudiante: string) {
+    const inscripciones = await this.inscripcionesRepository.findByEstudianteInscripciones(idEstudiante);
+
+    if (inscripciones.length === 0) {
+      throw new NotFoundException(`No se encontraron inscripciones para el estudiante con id ${idEstudiante}`);
+    }
+
+    for (const inscripcion of inscripciones) {
+      await this.inscripcionesRepository.delete(inscripcion.id);
+    }
+
+    return { message: `Se eliminaron todas las inscripciones del estudiante con id ${idEstudiante}` };
+  }
+
+  async findAllPaginated(page: number, limit: number, search?: string) {
     const skip = (page - 1) * limit;
     const [estudiantes, total] = await Promise.all([
-      this.inscripcionesRepository.findEstudianteWithInscripciones(skip, limit),
-      this.inscripcionesRepository.countEstudiantesWithInscripciones()
+      this.inscripcionesRepository.findEstudianteWithInscripciones(skip, limit, search),
+      this.inscripcionesRepository.countEstudiantesWithInscripciones(search)
     ]);
 
     const resultado: EstudianteAgrupado[] = estudiantes.map((estudiante) => {
@@ -150,6 +209,7 @@ export class InscripcionesService {
         apellidoPaterno: estudiante.perfil?.apellidoPaterno ?? '',
         apellidoMaterno: estudiante.perfil?.apellidoMaterno ?? '',
         correo: estudiante.correo,
+        estado: estudiante.estado,
 
         cursos: Array.from(cursos.values()).map((curso) => ({
           ...curso,
@@ -183,7 +243,7 @@ export class InscripcionesService {
 
     // buscar si alguno de los estudiantes están inscritos
     const inscripcionesExistentes = await Promise.all(estudiantesExistentes.map(estudiante => this.inscripcionesRepository.findByEstudianteId(estudiante.id)));
-    const estudiantesYaInscritos = inscripcionesExistentes.flat().filter((inscripcion: any) => inscripcion.moduloId === data.moduloId);
+    const estudiantesYaInscritos = inscripcionesExistentes.flat().filter((inscripcion: Inscripcion) => inscripcion.moduloId === data.moduloId);
 
     // filtrar los estudiantes
     const estudiantesNoInscritos = estudiantesExistentes.filter(estudiante => !estudiantesYaInscritos.some((inscripcion: any) => inscripcion.estudianteId === estudiante.id));
@@ -197,8 +257,8 @@ export class InscripcionesService {
   }
 
   // metodo obtener inscripciones de un estudiante por estudianteId
-  async findByEstudianteId(estudianteId: string) {
-    const inscripciones = await this.inscripcionesRepository.findByEstudianteId(estudianteId);
+  async findByEstudianteInscripciones(estudianteId: string) {
+    const inscripciones = await this.inscripcionesRepository.findByEstudianteInscripciones(estudianteId);
 
     const cursos = new Map<string, CursoAgrupadoConDetalles>();
 
@@ -211,7 +271,7 @@ export class InscripcionesService {
         curso = {
           id: cursoId,
           nombre: inscripcion.modulo.curso.nombre,
-          categoria: inscripcion.modulo.curso.categoria.nombre,
+          categoria: inscripcion.modulo.curso.categoria,
           modulos: [],
         };
 
@@ -223,10 +283,19 @@ export class InscripcionesService {
         nombre: inscripcion.modulo.nombre,
         orden: inscripcion.modulo.orden,
 
-        estado: inscripcion.estado,
-        estadoAcceso: inscripcion.estadoAcceso,
-        porcentajeAvance: inscripcion.porcentajeAvance,
-        numeroInscripcion: inscripcion.numeroInscripcion,
+        inscripcion: {
+          id: inscripcion.id,
+          moduloId: inscripcion.modulo.id,
+          estudianteId: inscripcion.estudianteId,
+          numeroInscripcion: inscripcion.numeroInscripcion,
+          fechaInscripcion: inscripcion.fechaInscripcion,
+          estado: inscripcion.estado,
+          estadoAcceso: inscripcion.estadoAcceso,
+          porcentajeAvance: inscripcion.porcentajeAvance,
+          fechaFinalizacion: inscripcion.fechaFinalizacion,
+          observaciones: inscripcion.observaciones,
+          inscritoPor: inscripcion.inscritoPor,
+        },
       });
     }
 
