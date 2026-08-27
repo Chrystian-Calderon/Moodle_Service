@@ -41,7 +41,6 @@ export class InscripcionesController {
   // metodo crear inscripcion con varios estudianteId
   @Post('multiple')
   createMultiple(@Body() data: CreateInscripcionEstudiantesDto) {
-    console.log('data', data);
     return this.inscripcionesService.createMultiple(data);
   }
 
