@@ -14,8 +14,8 @@ export class InscripcionesController {
   }
 
   @Get('paginated')
-  findAllPaginated(@Query('page') page = '1', @Query('limit') limit = '10') {
-    return this.inscripcionesService.findAllPaginated(Number(page), Number(limit));
+  findAllPaginated(@Query('page') page = '1', @Query('limit') limit = '10', @Query('search') search?: string) {
+    return this.inscripcionesService.findAllPaginated(Number(page), Number(limit), search);
   }
 
   @Get(':id')
@@ -38,6 +38,21 @@ export class InscripcionesController {
     return this.inscripcionesService.delete(id);
   }
 
+  @Delete(':idEstudiante/cursos/:idCurso')
+  eliminarCursoInscripciones(@Param('idEstudiante') idEstudiante: string, @Param('idCurso') idCurso: string) {
+    return this.inscripcionesService.eliminarCursoInscripciones(idEstudiante, idCurso);
+  }
+
+  @Delete(':id/cursos/:idCurso/modulos/:idModulo')
+  eliminarModuloInscripciones(@Param('id') id: string, @Param('idCurso') idCurso: string, @Param('idModulo') idModulo: string) {
+    return this.inscripcionesService.eliminarModuloInscripciones(id, idCurso, idModulo);
+  }
+
+  @Delete('all/:idEstudiante')
+  eliminarTodasInscripciones(@Param('idEstudiante') idEstudiante: string) {
+    return this.inscripcionesService.eliminarTodasInscripciones(idEstudiante);
+  }
+
   // metodo crear inscripcion con varios estudianteId
   @Post('multiple')
   createMultiple(@Body() data: CreateInscripcionEstudiantesDto) {
@@ -46,7 +61,7 @@ export class InscripcionesController {
 
   // metodo obtener inscripciones de un estudiante por estudianteId
   @Get('estudiante/:estudianteId')
-  findByEstudianteId(@Param('estudianteId') estudianteId: string) {
-    return this.inscripcionesService.findByEstudianteId(estudianteId);
+  findByEstudianteInscripciones(@Param('estudianteId') estudianteId: string) {
+    return this.inscripcionesService.findByEstudianteInscripciones(estudianteId);
   }
 }

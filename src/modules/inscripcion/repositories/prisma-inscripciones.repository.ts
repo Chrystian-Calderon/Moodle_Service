@@ -7,6 +7,32 @@ export class PrismaInscripcionesRepository
   implements InscripcionesRepository {
   constructor(private readonly prisma: PrismaService) { }
 
+  private buildSearchFilter(search?: string) {
+    if (!search?.trim()) return {};
+
+    const palabras = search.trim().split(/\s+/);
+
+    if (palabras.length === 1) {
+      return {
+        OR: [
+          { perfil: { nombre: { contains: palabras[0], mode: 'insensitive' as const } } },
+          { perfil: { apellidoPaterno: { contains: palabras[0], mode: 'insensitive' as const } } },
+          { perfil: { apellidoMaterno: { contains: palabras[0], mode: 'insensitive' as const } } },
+        ],
+      };
+    }
+
+    return {
+      AND: palabras.map(palabra => ({
+        OR: [
+          { perfil: { nombre: { contains: palabra, mode: 'insensitive' as const } } },
+          { perfil: { apellidoPaterno: { contains: palabra, mode: 'insensitive' as const } } },
+          { perfil: { apellidoMaterno: { contains: palabra, mode: 'insensitive' as const } } },
+        ],
+      })),
+    };
+  }
+
   async findAll() {
     return this.prisma.inscripcion.findMany({
       include: {
@@ -34,6 +60,33 @@ export class PrismaInscripcionesRepository
     });
   }
 
+  async findByIdWithCurso(id: string) {
+    return this.prisma.inscripcion.findUnique({
+      where: { id },
+      include: {
+        modulo: {
+          select: {
+            id: true,
+            nombre: true,
+            orden: true,
+
+            curso: {
+              select: {
+                id: true,
+                nombre: true,
+                categoria: {
+                  select: {
+                    nombre: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   async create(data: {
     moduloId: string;
     estudianteId: string;
@@ -58,12 +111,13 @@ export class PrismaInscripcionesRepository
   }
 
   // obtener inscripciones paginado
-  async findEstudianteWithInscripciones(skip: number, take: number) {
+  async findEstudianteWithInscripciones(skip: number, take: number, search?: string) {
     return this.prisma.usuario.findMany({
       where: {
         inscripciones: {
           some: {}
         },
+        ...this.buildSearchFilter(search),
       },
       skip,
       take,
@@ -73,6 +127,7 @@ export class PrismaInscripcionesRepository
       select: {
         id: true,
         correo: true,
+        estado: true,
         perfil: {
           select: {
             nombre: true,
@@ -113,12 +168,13 @@ export class PrismaInscripcionesRepository
       }
     });
   }
-  async countEstudiantesWithInscripciones() {
+  async countEstudiantesWithInscripciones(search?: string) {
     return this.prisma.usuario.count({
       where: {
         inscripciones: {
           some: {}
         },
+        ...this.buildSearchFilter(search),
       },
     });
   }
@@ -142,8 +198,15 @@ export class PrismaInscripcionesRepository
     });
   }
 
-  // metodo obtener inscripciones de un estudiante por estudianteId
+  // buscar estudiante con inscripciones por estudianteId si existe
   async findByEstudianteId(estudianteId: string) {
+    return this.prisma.inscripcion.findMany({
+      where: { estudianteId },
+    });
+  }
+
+  // metodo obtener inscripciones de un estudiante por estudianteId
+  async findByEstudianteInscripciones(estudianteId: string) {
     return this.prisma.inscripcion.findMany({
       where: { estudianteId },
       include: {
