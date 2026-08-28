@@ -3,8 +3,8 @@ import { InscripcionesRepository } from 'src/modules/inscripcion/repositories/in
 import { CreateInscripcionDto } from 'src/modules/inscripcion/dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
 import { CreateInscripcionEstudiantesDto } from './dto/create-inscripcion-estudiantes.dto';
-import { ModuloService } from 'src/modulo/modulo.service';
-import { UserService } from 'src/user/user.service';
+import { ModuloService } from 'src/modules/modulo/modulo.service';
+import { UserService } from 'src/modules/user/user.service';
 
 type Inscripcion = {
   id: string;
