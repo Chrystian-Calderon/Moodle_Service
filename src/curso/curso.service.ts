@@ -57,8 +57,10 @@ export class CursoService {
 
     const skip = (pagina - 1) * limite;
 
-    const categoria = categoriaId
-      ? await this.prisma.categoria.findUnique({
+    let filtroCategoria = {};
+
+    if (categoriaId) {
+      const categoria = await this.prisma.categoria.findUnique({
         where: {
           id: categoriaId,
         },
@@ -66,22 +68,32 @@ export class CursoService {
           id: true,
           categoriaPadreId: true,
         },
-      })
-      : null;
+      });
 
-    let filtroCategoria = {};
-
-    if (categoria) {
-      if (categoria.categoriaPadreId === null) {
-        filtroCategoria = {
-          categoria: {
-            categoriaPadreId: categoria.id,
-          },
-        };
-      } else {
-        filtroCategoria = {
-          categoriaId: categoria.id,
-        };
+      if (categoria) {
+        if (categoria.categoriaPadreId === null) {
+          // Categoría padre:
+          // mostrar cursos de la categoría padre
+          // y también cursos de sus subcategorías.
+          filtroCategoria = {
+            OR: [
+              {
+                categoriaId: categoria.id,
+              },
+              {
+                categoria: {
+                  categoriaPadreId: categoria.id,
+                },
+              },
+            ],
+          };
+        } else {
+          // Subcategoría:
+          // mostrar únicamente los cursos de esa subcategoría.
+          filtroCategoria = {
+            categoriaId: categoria.id,
+          };
+        }
       }
     }
 
@@ -124,6 +136,15 @@ export class CursoService {
         orderBy: {
           creadoEn: 'desc',
         },
+        include: {
+          categoria: {
+            select: {
+              id: true,
+              nombre: true,
+              slug: true,
+            },
+          },
+        },
       }),
 
       this.prisma.curso.count({
@@ -143,6 +164,7 @@ export class CursoService {
       },
     };
   }
+
 
   async findOne(id: string) {
     const curso = await this.prisma.curso.findUnique({
@@ -225,39 +247,6 @@ export class CursoService {
     });
   }
 
-  async findCategorias() {
-    return await this.prisma.categoria.findMany({
-      where: {
-        categoriaPadreId: null,
-      },
-      select: {
-        id: true,
-        nombre: true,
-        slug: true,
-      },
-      orderBy: {
-        nombre: "asc",
-      },
-    });
-  }
-
-  async findSubCategorias(categoriaId: string) {
-    return await this.prisma.categoria.findMany({
-      where: {
-        categoriaPadreId: categoriaId,
-      },
-      select: {
-        id: true,
-        nombre: true,
-        slug: true,
-      },
-      orderBy: {
-        nombre: "asc",
-      },
-    });
-  }
-
-  // obtener todos los cursos sin paginación ni filtros con modulos (id, nombre)
   async obtenerCursos() {
     const cursos = await this.prisma.curso.findMany({
       select: {
@@ -275,7 +264,6 @@ export class CursoService {
     return cursos;
   }
 
-  // subir imagen de un curso
   async subirImagenCurso(file: Express.Multer.File, cursoId: string) {
     const curso = await this.findOne(cursoId);
 
@@ -283,10 +271,8 @@ export class CursoService {
       throw new NotFoundException('Curso no encontrado');
     }
 
-    // subir imagen a cloudinary
     const imagen = await this.cloudinaryService.uploadImage(file, 'lms/cursos');
 
-    // actualizar curso con url de la imagen y publicId
     return this.prisma.curso.update({
       where: { id: cursoId },
       data: {

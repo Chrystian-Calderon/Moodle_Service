@@ -18,23 +18,25 @@ import {
 import { CursoService } from './curso.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permission.guard';
 import { Permission } from 'src/auth/enums/permission.enum';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('curso')
 export class CursoController {
   constructor(private readonly cursoService: CursoService) { }
 
+  @Post()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(Permission.CURSO_CREAR)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'rutaPortada', maxCount: 1 },
       { name: 'rutaImagenSecundaria', maxCount: 1 },
     ]),
   )
-  @Post()
   async create(
     @Body() createCursoDto: CreateCursoDto,
     @UploadedFiles()
@@ -52,28 +54,16 @@ export class CursoController {
 
   @Get()
   findAll(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
-    page: number,
-
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
-    limit: number,
-
-    @Query('search')
-    search?: string,
-
-    @Query('categoriaId')
-    categoriaId?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+    @Query('categoriaId') categoriaId?: string,
   ) {
-    return this.cursoService.findAll(
-      page,
-      limit,
-      search,
-      categoriaId,
-    );
+    return this.cursoService.findAll(page, limit, search, categoriaId);
   }
 
   @Get('curso-modulos')
-  @UseGuards(PermissionsGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions(Permission.CURSO_VER)
   obtenerCursos() {
     return this.cursoService.obtenerCursos();
@@ -90,15 +80,19 @@ export class CursoController {
   }
 
   @Patch(':id/imagen')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(Permission.CURSO_EDITAR)
   @UseInterceptors(FileInterceptor('imagen'))
   async subirImagenCurso(
     @Param('id') cursoId: string,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() file: Express.Multer.File,
   ) {
     return this.cursoService.subirImagenCurso(file, cursoId);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(Permission.CURSO_EDITAR)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'rutaPortada', maxCount: 1 },
@@ -123,17 +117,10 @@ export class CursoController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(Permission.CURSO_ELIMINAR)
   remove(@Param('id') id: string) {
     return this.cursoService.remove(id);
   }
 
-  @Get('/cat/categorias')
-  findCategorias() {
-    return this.cursoService.findCategorias();
-  }
-
-  @Get('/cat/subcategorias/:categoriaId')
-  findSubCategorias(@Param('categoriaId') categoriaId: string) {
-    return this.cursoService.findSubCategorias(categoriaId);
-  }
 }

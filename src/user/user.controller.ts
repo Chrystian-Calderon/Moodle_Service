@@ -17,9 +17,13 @@ import {
   UpdateUsuarioDto,
 } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PermissionGuard } from 'src/common/guards/permission.guard';
 import { Permission } from 'src/common/decorator/decorator';
 import { CreateStudentDto } from './dto/create-student.dto';
-import { CambiarMiPasswordDto, ChangePasswordUserDto } from './dto/change-password';
+import {
+  CambiarMiPasswordDto,
+  ChangePasswordUserDto,
+} from './dto/change-password';
 import type { AuthenticatedRequest } from 'src/common/types/authenticated-user';
 
 @Controller('user')
@@ -27,23 +31,29 @@ export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @Post()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Permission('usuarios.crear')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Post('crear-estudiante')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Permission('usuarios.crear')
   createStudent(@Body() createStudentDto: CreateStudentDto) {
     return this.userService.createStudent(createStudentDto);
   }
 
   @Get('search')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Permission('usuarios.ver')
   buscarUsuarios(@Query('q') q: string) {
     return this.userService.buscarUsuarios(q);
   }
 
   @Get('estudiantes')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Permission('usuarios.ver')
   obtenerEstudiantes() {
     return this.userService.ObtenerEstudiantes();
   }
@@ -55,7 +65,7 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @Permission('usuarios.ver')
   obtenerUsuarios(
     @Query('page') page = '1',
@@ -68,7 +78,8 @@ export class UserController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Permission('usuarios.ver')
   obtenerUsuarioPorId(@Param('id') id: string) {
     return this.userService.buscarDetallePorId(id);
   }
@@ -98,7 +109,8 @@ export class UserController {
   }
 
   @Patch('password/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Permission('usuarios.editar')
   async changePasswordUser(
     @Param('id') id: string,
     @Body() dto: ChangePasswordUserDto,
@@ -107,6 +119,8 @@ export class UserController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Permission('usuarios.editar')
   async actualizarUsuario(
     @Param('id') id: string,
     @Body() data: UpdateUsuarioDto,
@@ -115,6 +129,8 @@ export class UserController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Permission('usuarios.eliminar')
   desactivarUsuario(@Param('id') id: string) {
     return this.userService.DesactivarUsuario(id);
   }
