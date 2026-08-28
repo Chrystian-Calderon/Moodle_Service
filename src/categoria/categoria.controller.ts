@@ -29,21 +29,18 @@ export class CategoriaController {
 
   @Get()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CATEGORIA_VER)
   findAll() {
     return this.categoriaService.findAll();
   }
 
   @Get(':id/subcategorias')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CATEGORIA_VER)
   findSubCategorias(@Param('id') id: string) {
     return this.categoriaService.findSubCategorias(id);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CATEGORIA_VER)
   findOne(@Param('id') id: string) {
     return this.categoriaService.findOne(id);
   }
