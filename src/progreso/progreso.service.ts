@@ -23,6 +23,12 @@ export class ProgresoService {
             id: true,
             nombre: true,
             cursoId: true,
+            curso: {
+              select: {
+                id: true,
+                nombre: true,
+              }
+            }
           },
         },
       },
