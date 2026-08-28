@@ -2,12 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProgresoModuloResultado } from './type/ProgresoModuloResultado';
 import { CertificadoService } from 'src/certificado/certificado.service';
+import { NotificacionesService } from 'src/notificaciones/notificaciones.service';
 
 @Injectable()
 export class ProgresoService {
 
   constructor(private readonly prisma: PrismaService,
-    private readonly certificadoService: CertificadoService
+    private readonly certificadoService: CertificadoService,
+    private readonly notificacionesService: NotificacionesService
   ) { }
 
   async recalcularProgresoModulo(inscripcionId: string) {
@@ -112,6 +114,13 @@ export class ProgresoService {
 
     if (completado) {
       await this.certificadoService.emitirCertificadoModulo(inscripcion.id);
+      await this.notificacionesService.crear({
+        usuarioId: inscripcion.estudianteId,
+        tipo: 'modulo_completado',
+        titulo: `¡Felicidades! Has completado el módulo "${inscripcion.modulo.nombre}"`,
+        contenido: `Has completado todas las lecciones del módulo "${inscripcion.modulo.nombre}". ¡Sigue así!`,
+        urlAccion: '/certificados',
+      });
 
       const cursoCompleto = await this.verificarCursoCompleto(
         inscripcion.estudianteId,
@@ -123,6 +132,14 @@ export class ProgresoService {
           inscripcion.estudianteId,
           inscripcion.modulo.cursoId,
         );
+
+        await this.notificacionesService.crear({
+          usuarioId: inscripcion.estudianteId,
+          tipo: 'curso_completado',
+          titulo: `¡Felicidades! Has completado el curso`,
+          contenido: `Has completado el curso "${inscripcion.modulo.curso.nombre}".`,
+          urlAccion: '/certificados'
+        });
       }
     }
 

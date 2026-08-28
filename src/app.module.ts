@@ -22,6 +22,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { CertificadosModule } from './certificado/certificado.module';
 import { ProgresoModule } from './progreso/progreso.module';
 import { CategoriaModule } from './categoria/categoria.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 
 
 @Module({
@@ -43,7 +44,8 @@ import { CategoriaModule } from './categoria/categoria.module';
     CertificadosModule,
     ProgresoModule,
     CategoriaModule,
-    
+    NotificacionesModule,
+
   ],
   controllers: [AppController],
   providers: [
