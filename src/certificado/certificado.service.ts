@@ -806,4 +806,65 @@ export class CertificadoService {
 
     return `Se otorga al estudiante por haber cursado los módulos de ${resto} y ${ultimo}.`;
   }
+
+  async verificarPorCodigo(codigo: string) {
+    const certificado = await this.prisma.certificado.findUnique({
+      where: {
+        codigoVerificacion: codigo,
+      },
+      include: {
+        usuario: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        curso: {
+          select: {
+            id: true,
+            nombre: true,
+            slug: true,
+          },
+        },
+        inscripcion: {
+          select: {
+            id: true,
+            numeroInscripcion: true,
+            estado: true,
+            porcentajeAvance: true,
+            modulo: {
+              select: {
+                id: true,
+                nombre: true,
+                cursoId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!certificado) {
+      throw new NotFoundException(
+        'El certificado no existe o el código de verificación no es válido',
+      );
+    }
+
+    return {
+      valido: certificado.estado === 'emitido',
+      certificado: {
+        id: certificado.id,
+        codigoVerificacion: certificado.codigoVerificacion,
+        numeroCertificado: certificado.numeroCertificado,
+        titulo: certificado.titulo,
+        tipo: certificado.tipo,
+        estado: certificado.estado,
+        fechaEmision: certificado.fechaEmision,
+        usuario: certificado.usuario,
+        curso: certificado.curso,
+        modulo: certificado.inscripcion?.modulo ?? null,
+      },
+    };
+  }
+
 }

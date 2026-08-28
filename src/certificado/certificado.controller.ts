@@ -42,9 +42,9 @@ export class CertificadosController {
     return this.certificadoService.buscarPorUsuario(usuarioId);
   }
 
-  @Get('codigo/:codigo')
+  @Get('verificar/:codigo')
   async buscarPorCodigo(@Param('codigo') codigo: string) {
-    return this.certificadoService.buscarPorCodigo(codigo);
+    return this.certificadoService.verificarPorCodigo(codigo);
   }
 
   @Get('curso/:cursoId')
