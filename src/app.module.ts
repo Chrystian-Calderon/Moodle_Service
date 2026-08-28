@@ -21,6 +21,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { CertificadosModule } from './certificado/certificado.module';
 import { ProgresoModule } from './progreso/progreso.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 
 
 @Module({
@@ -41,6 +42,7 @@ import { ProgresoModule } from './progreso/progreso.module';
     FormularioLeccionModule,
     CertificadosModule,
     ProgresoModule,
+    NotificacionesModule,
     
   ],
   controllers: [AppController],
