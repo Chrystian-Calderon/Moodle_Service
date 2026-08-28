@@ -545,6 +545,8 @@ export class CertificadoService {
     const numeroCertificado =
       this.generarNumeroCertificado();
 
+    const frontendUrl = process.env.FRONTEND_URL;
+
     const certificado =
       await this.prisma.certificado.create({
         data: {
@@ -570,7 +572,8 @@ export class CertificadoService {
           estado: 'emitido',
 
           urlVerificacion:
-            `http://localhost:5173/verificar/${codigoVerificacion}`,
+            `${frontendUrl}/verificar/${codigoVerificacion}`,
+
         },
       });
 
