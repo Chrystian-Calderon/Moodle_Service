@@ -5,19 +5,32 @@ import { AllExceptionsFilter } from './common/filters/all-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+
+  const frontendUrl = process.env.FRONTEND_URL;
+
+  app.enableCors({
+    origin: frontendUrl || 'http://localhost:5173',
+    credentials: true,
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
     }),
   );
+
   app.setGlobalPrefix('api');
+
   app.useGlobalFilters(
     new AllExceptionsFilter(),
   );
+
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`Application is running on port ${port}`);
 }
+
 bootstrap();
