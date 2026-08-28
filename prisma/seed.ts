@@ -22,10 +22,10 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
     // await seedUsuarios(prisma);
     // await seedEstudiantes(prisma);
-    // await seedPermisos(prisma);
+    await seedPermisos(prisma);
     // await seedCursos(prisma);
-    await seedModulos(prisma);
-    await seedLecciones(prisma);
+    //await seedModulos(prisma);
+    //await seedLecciones(prisma);
     // await seedRecursosLecciones(prisma);
     // await seedFormularioLecciones(prisma);
     // await seedInscripciones(prisma);

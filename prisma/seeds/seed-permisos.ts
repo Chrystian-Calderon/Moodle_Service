@@ -7,55 +7,80 @@ export const PERMISSIONS = {
     EDITAR: 'usuarios.editar',
     ELIMINAR: 'usuarios.eliminar',
   },
+
   CURSOS: {
     VER: 'cursos.ver',
     CREAR: 'cursos.crear',
     EDITAR: 'cursos.editar',
     ELIMINAR: 'cursos.eliminar',
   },
+
   MODULOS: {
     VER: 'modulos.ver',
     CREAR: 'modulos.crear',
     EDITAR: 'modulos.editar',
     ELIMINAR: 'modulos.eliminar',
   },
+
   LECCIONES: {
     VER: 'lecciones.ver',
     CREAR: 'lecciones.crear',
     EDITAR: 'lecciones.editar',
     ELIMINAR: 'lecciones.eliminar',
   },
+
   FORMULARIOS: {
     VER: 'formularios.ver',
     CREAR: 'formularios.crear',
     EDITAR: 'formularios.editar',
     ELIMINAR: 'formularios.eliminar',
   },
+
   INSCRIPCIONES: {
     VER: 'inscripciones.ver',
     CREAR: 'inscripciones.crear',
     EDITAR: 'inscripciones.editar',
     ELIMINAR: 'inscripciones.eliminar',
   },
+
   ROLES: {
     VER: 'roles.ver',
     CREAR: 'roles.crear',
     EDITAR: 'roles.editar',
     ELIMINAR: 'roles.eliminar',
   },
+
   PERMISOS: {
     VER: 'permisos.ver',
     CREAR: 'permisos.crear',
     EDITAR: 'permisos.editar',
     ELIMINAR: 'permisos.eliminar',
   },
+
+  RECURSOS_LECCIONES: {
+    VER: 'recursos_lecciones.ver',
+    CREAR: 'recursos_lecciones.crear',
+    EDITAR: 'recursos_lecciones.editar',
+    ELIMINAR: 'recursos_lecciones.eliminar',
+  },
+
+  CERTIFICADOS: {
+    VER: 'certificados.ver',
+  },
 } as const;
 
-type PermisoGroup = typeof PERMISSIONS;
-type PermisoAction = 'VER' | 'CREAR' | 'EDITAR' | 'ELIMINAR';
-
-function getAllPermissions(): { nombre: string; descripcion: string; grupo: string; accion: string }[] {
-  const permisos: { nombre: string; descripcion: string; grupo: string; accion: string }[] = [];
+function getAllPermissions(): {
+  nombre: string;
+  descripcion: string;
+  grupo: string;
+  accion: string;
+}[] {
+  const permisos: {
+    nombre: string;
+    descripcion: string;
+    grupo: string;
+    accion: string;
+  }[] = [];
 
   for (const [grupo, actions] of Object.entries(PERMISSIONS)) {
     for (const [accion, nombre] of Object.entries(actions)) {
@@ -74,67 +99,99 @@ function getAllPermissions(): { nombre: string; descripcion: string; grupo: stri
 export async function seedPermisos(prisma: PrismaClient) {
   const permisosData = getAllPermissions();
 
-  console.log('🔑 Iniciando siembra de permisos...');
+  console.log('🔑 Iniciando siembra limpia de permisos...');
 
-  // Crear permisos
+  const rolAdmin = await prisma.rol.findUnique({
+    where: { nombre: 'ADMINISTRADOR' },
+  });
+
+  const rolEstudiante = await prisma.rol.findUnique({
+    where: { nombre: 'ESTUDIANTE' },
+  });
+
+  if (!rolAdmin || !rolEstudiante) {
+    console.log(
+      '⚠️ Roles ADMINISTRADOR o ESTUDIANTE no encontrados. Ejecuta primero los seeds de roles/usuarios.',
+    );
+    return;
+  }
+
+  console.log('🗑️ Eliminando relaciones de permisos...');
+
+  await prisma.rolPermiso.deleteMany({});
+
+  console.log('🗑️ Eliminando permisos existentes...');
+
+  await prisma.permiso.deleteMany({});
+
+  console.log('🔑 Creando permisos...');
+
   const permisosMap: Record<string, string> = {};
 
   for (const permiso of permisosData) {
-    const created = await prisma.permiso.upsert({
-      where: { nombre: permiso.nombre },
-      update: {},
-      create: {
+    const created = await prisma.permiso.create({
+      data: {
         nombre: permiso.nombre,
         descripcion: permiso.descripcion,
         estado: 'activo',
       },
     });
+
     permisosMap[permiso.nombre] = created.id;
+
     console.log(`  🔑 ${permiso.nombre}`);
   }
 
-  // Obtener roles
-  const rolAdmin = await prisma.rol.findUnique({ where: { nombre: 'ADMINISTRADOR' } });
-  const rolEstudiante = await prisma.rol.findUnique({ where: { nombre: 'ESTUDIANTE' } });
+  console.log('\n👤 Asignando todos los permisos a ADMINISTRADOR...');
 
-  if (!rolAdmin || !rolEstudiante) {
-    console.log('  ⚠️  Roles ADMINISTRADOR o ESTUDIANTE no encontrados. Asegúrate de ejecutar seed-estudiantes primero.');
-    return;
-  }
-
-  // Asignar permisos a ADMINISTRADOR (todos)
-  console.log('\n👤 Asignando permisos a ADMINISTRADOR...');
   for (const permiso of permisosData) {
-    await prisma.rolPermiso.upsert({
-      where: { rolId_permisoId: { rolId: rolAdmin.id, permisoId: permisosMap[permiso.nombre] } },
-      update: {},
-      create: {
+    await prisma.rolPermiso.create({
+      data: {
         rolId: rolAdmin.id,
         permisoId: permisosMap[permiso.nombre],
       },
     });
   }
-  console.log(`  ✅ ${permisosData.length} permisos asignados a ADMINISTRADOR`);
 
-  // Asignar permisos a ESTUDIANTE (solo ver)
+  console.log(
+    `  ✅ ${permisosData.length} permisos asignados a ADMINISTRADOR`,
+  );
+
+  const permisosEstudiante = [
+    'cursos.ver',
+    'modulos.ver',
+    'lecciones.ver',
+    'formularios.ver',
+    'recursos_lecciones.ver',
+    'certificados.ver',
+  ];
+
   console.log('\n👨‍🎓 Asignando permisos a ESTUDIANTE...');
-  const permisosVer = permisosData.filter((p) => p.accion === 'VER');
-  for (const permiso of permisosVer) {
-    await prisma.rolPermiso.upsert({
-      where: { rolId_permisoId: { rolId: rolEstudiante.id, permisoId: permisosMap[permiso.nombre] } },
-      update: {},
-      create: {
+
+  for (const nombrePermiso of permisosEstudiante) {
+    const permisoId = permisosMap[nombrePermiso];
+
+    if (!permisoId) {
+      console.log(`  ⚠️ Permiso ${nombrePermiso} no encontrado.`);
+      continue;
+    }
+
+    await prisma.rolPermiso.create({
+      data: {
         rolId: rolEstudiante.id,
-        permisoId: permisosMap[permiso.nombre],
+        permisoId,
       },
     });
+
+    console.log(`  ✅ ${nombrePermiso}`);
   }
-  console.log(`  ✅ ${permisosVer.length} permisos de lectura asignados a ESTUDIANTE`);
 
   console.log('\n🎉 ¡Permisos sembrados con éxito!');
   console.log('--------------------------------------------------');
-  console.log(`  🔑 Permisos totales: ${permisosData.length}`);
-  console.log(`  👤 ADMINISTRADOR: ${permisosData.length} permisos (todos)`);
-  console.log(`  👨‍🎓 ESTUDIANTE: ${permisosVer.length} permisos (solo ver)`);
+  console.log(`🔑 Permisos totales: ${permisosData.length}`);
+  console.log(`👤 ADMINISTRADOR: ${permisosData.length} permisos`);
+  console.log(
+    `👨‍🎓 ESTUDIANTE: ${permisosEstudiante.length} permisos`,
+  );
   console.log('--------------------------------------------------');
 }

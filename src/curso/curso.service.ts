@@ -225,39 +225,6 @@ export class CursoService {
     });
   }
 
-  async findCategorias() {
-    return await this.prisma.categoria.findMany({
-      where: {
-        categoriaPadreId: null,
-      },
-      select: {
-        id: true,
-        nombre: true,
-        slug: true,
-      },
-      orderBy: {
-        nombre: "asc",
-      },
-    });
-  }
-
-  async findSubCategorias(categoriaId: string) {
-    return await this.prisma.categoria.findMany({
-      where: {
-        categoriaPadreId: categoriaId,
-      },
-      select: {
-        id: true,
-        nombre: true,
-        slug: true,
-      },
-      orderBy: {
-        nombre: "asc",
-      },
-    });
-  }
-
-  // obtener todos los cursos sin paginación ni filtros con modulos (id, nombre)
   async obtenerCursos() {
     const cursos = await this.prisma.curso.findMany({
       select: {
@@ -275,7 +242,6 @@ export class CursoService {
     return cursos;
   }
 
-  // subir imagen de un curso
   async subirImagenCurso(file: Express.Multer.File, cursoId: string) {
     const curso = await this.findOne(cursoId);
 
@@ -283,10 +249,8 @@ export class CursoService {
       throw new NotFoundException('Curso no encontrado');
     }
 
-    // subir imagen a cloudinary
     const imagen = await this.cloudinaryService.uploadImage(file, 'lms/cursos');
 
-    // actualizar curso con url de la imagen y publicId
     return this.prisma.curso.update({
       where: { id: cursoId },
       data: {
