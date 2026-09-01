@@ -9,7 +9,7 @@ async function bootstrap() {
   const frontendUrl = process.env.FRONTEND_URL;
 
   app.enableCors({
-    origin: frontendUrl || 'http://localhost:5173',
+    origin: frontendUrl || 'http://localhost:5173' || 'http://localhost:3000',
     credentials: true,
   });
 
