@@ -12,7 +12,7 @@ async function bootstrap() {
     origin: [
       frontendUrl,
       'http://localhost:5173',
-      'http://localhost:3000',
+      'http://localhost:3001',
     ].filter(Boolean),
     credentials: true,
   });

@@ -15,6 +15,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permission.guard';
 import { Permission } from 'src/auth/enums/permission.enum';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('categoria')
 export class CategoriaController {
@@ -27,8 +28,8 @@ export class CategoriaController {
     return this.categoriaService.create(dto);
   }
 
+  @Public()
   @Get()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
   findAll() {
     return this.categoriaService.findAll();
   }
