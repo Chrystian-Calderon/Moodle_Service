@@ -17,7 +17,6 @@ async function bootstrap() {
       'http://localhost:3001',
       frontendPage
     ].filter(Boolean),
-    credentials: true,
   });
 
   app.useGlobalPipes(
