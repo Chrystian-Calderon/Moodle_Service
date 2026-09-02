@@ -17,4 +17,7 @@ export type ProgresoModuloResultado = {
 
     completadoEn: Date | null;
     actualizadoEn: Date;
+
+    transicionACompletado?: boolean;
+    cursoCompleto?: boolean;
 };

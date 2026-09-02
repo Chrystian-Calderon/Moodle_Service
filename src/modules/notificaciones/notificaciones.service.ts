@@ -23,6 +23,28 @@ export class NotificacionesService {
     });
   }
 
+  async crearUnica(data: {
+    usuarioId: string;
+    tipo: string;
+    titulo: string;
+    contenido: string;
+    urlAccion?: string;
+  }) {
+    const existente = await this.prisma.notificaciones.findFirst({
+      where: {
+        usuarioId: data.usuarioId,
+        tipo: data.tipo,
+        titulo: data.titulo,
+      },
+    });
+
+    if (existente) {
+      return existente;
+    }
+
+    return this.crear(data);
+  }
+
   async findByUsuarioId(usuarioId: string) {
     return this.prisma.notificaciones.findMany({
       where: {

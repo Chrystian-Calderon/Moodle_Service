@@ -352,10 +352,14 @@ export class LeccionService {
         },
       });
 
-    await this.progresoService.recalcularProgresoModulo(
+    const progresoModuloResultado = await this.progresoService.recalcularProgresoModulo(
       inscripcion.id,
     );
 
-    return progresoActualizado;
+    return {
+      ...progresoActualizado,
+      moduloCompletado: progresoModuloResultado.transicionACompletado ?? false,
+      cursoCompletado: progresoModuloResultado.cursoCompleto ?? false,
+    };
   }
 }

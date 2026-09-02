@@ -78,6 +78,9 @@ export class ProgresoService {
         },
       });
 
+    const transicionACompletado =
+      completado && progresoExistente?.estado !== 'completado';
+
     const completadoEn = completado
       ? progresoExistente?.completadoEn ?? new Date()
       : null;
@@ -118,9 +121,11 @@ export class ProgresoService {
       },
     });
 
-    if (completado) {
+    let cursoCompleto = false;
+
+    if (transicionACompletado) {
       await this.certificadoService.emitirCertificadoModulo(inscripcion.id);
-      await this.notificacionesService.crear({
+      await this.notificacionesService.crearUnica({
         usuarioId: inscripcion.estudianteId,
         tipo: 'modulo_completado',
         titulo: `¡Felicidades! Has completado el módulo "${inscripcion.modulo.nombre}"`,
@@ -128,7 +133,7 @@ export class ProgresoService {
         urlAccion: '/certificados',
       });
 
-      const cursoCompleto = await this.verificarCursoCompleto(
+      cursoCompleto = await this.verificarCursoCompleto(
         inscripcion.estudianteId,
         inscripcion.modulo.cursoId,
       );
@@ -139,7 +144,7 @@ export class ProgresoService {
           inscripcion.modulo.cursoId,
         );
 
-        await this.notificacionesService.crear({
+        await this.notificacionesService.crearUnica({
           usuarioId: inscripcion.estudianteId,
           tipo: 'curso_completado',
           titulo: `¡Felicidades! Has completado el curso`,
@@ -168,6 +173,9 @@ export class ProgresoService {
 
       completadoEn: progresoModulo.completadoEn,
       actualizadoEn: progresoModulo.actualizadoEn,
+
+      transicionACompletado,
+      cursoCompleto: transicionACompletado && cursoCompleto,
     };
   }
 
