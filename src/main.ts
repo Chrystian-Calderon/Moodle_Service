@@ -8,11 +8,14 @@ async function bootstrap() {
 
   const frontendUrl = process.env.FRONTEND_URL;
 
+  const frontendPage = process.env.FRONTEND_URL_PAGE;
+
   app.enableCors({
     origin: [
       frontendUrl,
       'http://localhost:5173',
       'http://localhost:3001',
+      FRONTEND_URL_PAGE
     ].filter(Boolean),
     credentials: true,
   });
