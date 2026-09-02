@@ -23,6 +23,7 @@ import { Permission } from 'src/auth/enums/permission.enum';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('curso')
 export class CursoController {
@@ -52,6 +53,7 @@ export class CursoController {
     );
   }
 
+  @Public()
   @Get()
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,

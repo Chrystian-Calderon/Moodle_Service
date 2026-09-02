@@ -8,9 +8,15 @@ async function bootstrap() {
 
   const frontendUrl = process.env.FRONTEND_URL;
 
+  const frontendPage = process.env.FRONTEND_URL_PAGE;
+
   app.enableCors({
-    origin: frontendUrl || 'http://localhost:5173',
-    credentials: true,
+    origin: [
+      frontendUrl,
+      'http://localhost:5173',
+      'http://localhost:3001',
+      frontendPage
+    ].filter(Boolean),
   });
 
   app.useGlobalPipes(
