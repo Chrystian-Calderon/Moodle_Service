@@ -16,6 +16,7 @@ import type { JSX } from 'react';
 const ASSETS = path.join(
     process.cwd(),
     'src',
+    'modules',
     'certificado',
     'assets',
 );
