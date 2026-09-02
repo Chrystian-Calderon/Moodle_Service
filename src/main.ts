@@ -15,7 +15,7 @@ async function bootstrap() {
       frontendUrl,
       'http://localhost:5173',
       'http://localhost:3001',
-      FRONTEND_URL_PAGE
+      frontendPage
     ].filter(Boolean),
     credentials: true,
   });
